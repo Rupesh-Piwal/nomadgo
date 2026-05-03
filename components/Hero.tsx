@@ -187,7 +187,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.6 }}
-        className="absolute bottom-6 md:bottom-12 left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[1060px] px-3 dark"
+        className="absolute bottom-6 md:bottom-12 left-1/2 -translate-x-1/2 z-40 w-[96%] max-w-[1260px] px-3 dark"
       >
         <div className="bg-white/[0.12] backdrop-blur-2xl border border-white/20 rounded-[24px] md:rounded-full shadow-[0_32px_80px_-12px_rgba(0,0,0,0.3)] flex flex-wrap md:flex-nowrap items-stretch p-0 md:p-2 relative overflow-hidden md:overflow-visible">
 
@@ -209,7 +209,7 @@ export default function Hero() {
                     setDestination(fullName);
                   }}
                   disabled={isPending}
-                  dropdownClassName="md:w-[360px] md:-left-4 bg-white/90 backdrop-blur-xl border-navy/10 shadow-2xl rounded-[8px]"
+                  dropdownClassName="md:w-[360px] md:-left-4 bg-white/95 backdrop-blur-3xl border border-white/20 shadow-[0_32px_120px_-15px_rgba(0,0,0,0.5)] rounded-[10px]"
                 />
               </div>
             </div>

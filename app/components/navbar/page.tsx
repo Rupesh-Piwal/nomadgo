@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Compass, Heart, Zap, LogOut, User, Settings } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Menu, X, Compass, Heart, Zap, LogOut, User, Settings, History, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +41,7 @@ const Navbar = ({ user }: { user?: UserProp }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLanding = pathname === "/";
+  const isDashboard = pathname.startsWith("/dashboard");
 
   useEffect(() => {
     setMounted(true);
@@ -59,19 +62,21 @@ const Navbar = ({ user }: { user?: UserProp }) => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-          ? "glass shadow-lg shadow-black/10"
-          : isLanding
-            ? "bg-transparent"
-            : "transparent"
-          }`}
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+          scrolled
+            ? "glass shadow-lg shadow-black/10"
+            : isLanding
+              ? "bg-transparent"
+              : "transparent"
+        )}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="font-sans text-xl font-semibold text-foreground tracking-tight">
-              NomadGo
-            </span>
-          </Link>
+          <div className="flex items-center gap-4">
+            {isDashboard && (
+              <SidebarTrigger className="md:hidden text-foreground" />
+            )}
+          </div>
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -162,12 +167,14 @@ const Navbar = ({ user }: { user?: UserProp }) => {
             )}
           </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-foreground"
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {!isDashboard && (
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden text-foreground"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          )}
         </div>
       </motion.nav>
 
@@ -185,16 +192,21 @@ const Navbar = ({ user }: { user?: UserProp }) => {
                   key={link.to}
                   href={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 text-lg font-medium text-foreground"
+                  className={cn(
+                    "flex items-center gap-3 text-lg font-medium transition-colors",
+                    pathname === link.to ? "text-primary" : "text-foreground"
+                  )}
                 >
-                  <link.icon className="w-5 h-5 text-primary" />
+                  <link.icon className={cn("w-5 h-5", pathname === link.to ? "text-primary" : "text-primary/60")} />
                   {link.label}
                 </Link>
               ))}
+
+
               <Link
                 href="/dashboard/itinerary/new"
                 onClick={() => setMobileOpen(false)}
-                className="mt-4 px-6 py-3 bg-primary text-primary-foreground text-center rounded-full font-medium"
+                className="mt-4 px-6 py-3 bg-primary text-primary-foreground text-center rounded-full font-medium shadow-lg shadow-primary/20"
               >
                 Plan a Trip
               </Link>

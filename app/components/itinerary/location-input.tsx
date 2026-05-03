@@ -20,6 +20,7 @@ interface LocationInputProps {
   onSelect?: (location: LocationSuggestion) => void;
   disabled?: boolean;
   dropdownClassName?: string;
+  className?: string;
 }
 
 const FEATURED_DESTINATIONS: LocationSuggestion[] = [
@@ -41,7 +42,7 @@ const FEATURED_DESTINATIONS: LocationSuggestion[] = [
   },
 ];
 
-export default function LocationInput({ defaultValue = "", onSelect, disabled, dropdownClassName }: LocationInputProps) {
+export default function LocationInput({ defaultValue = "", onSelect, disabled, dropdownClassName, className }: LocationInputProps) {
   const [query, setQuery] = useState(defaultValue);
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +79,7 @@ export default function LocationInput({ defaultValue = "", onSelect, disabled, d
         const res = await fetch(`/api/locations?q=${encodeURIComponent(query)}`, {
           signal: controller.signal
         });
-        
+
         if (!res.ok) throw new Error("Search failed");
         const data = await res.json();
 
@@ -135,7 +136,10 @@ export default function LocationInput({ defaultValue = "", onSelect, disabled, d
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
           autoComplete="off"
-          className="pl-12 h-14 bg-accent/20 border-border/50 focus:bg-accent/40 focus:ring-1 focus:ring-primary/20 transition-all rounded-2xl placeholder:text-muted-foreground/50 shadow-sm placeholder:text-[18px] placeholder:font-light"
+          className={cn(
+            "pl-12 h-14 bg-accent/20 border-border/50 focus:bg-accent/40 focus:ring-1 focus:ring-primary/20 transition-all rounded-2xl placeholder:text-muted-foreground/50 shadow-sm placeholder:text-[18px] placeholder:font-light",
+            className
+          )}
           required
           disabled={disabled}
         />
@@ -153,45 +157,42 @@ export default function LocationInput({ defaultValue = "", onSelect, disabled, d
         )}>
 
           {showFeatured && (
-            <div className="py-7">
-              <div className="px-8 mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-6 h-6 rounded-2xl bg-terracotta/20 flex items-center justify-center border border-terracotta/10">
-                    <Compass size={24} weight="light" className="text-terracotta" />
+            <div className="py-8">
+              <div className="px-10 mb-8 flex items-center justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-10 h-10 rounded-2xl bg-navy/20 flex items-center justify-center border border-white/10 shadow-inner">
+                    <Compass size={24} weight="fill" className="text-terracotta" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[12px] font-bold uppercase tracking-[0.25em] text-white/90">
+                    <span className="text-[12px] md:text-[16px] font-bold text-navy">
                       Destinations
                     </span>
-                    <span className="text-[10px] text-white/30 uppercase tracking-[0.1em] font-medium mt-0.5">
-                      Explore a city
+                    <span className="text-[10px] md:text-[11px] text-navy/40 font-medium mt-1">
+                      Explore the world
                     </span>
                   </div>
                 </div>
-                <div className="h-px bg-white/5 flex-1 ml-10" />
+                <div className="h-px bg-white/10 flex-1 ml-12" />
               </div>
 
-              <div className="flex flex-row gap-5 px-8 pb-4 overflow-x-auto no-scrollbar scroll-smooth">
+              <div className="flex flex-row gap-6 px-10 pb-6 overflow-x-auto no-scrollbar scroll-smooth">
                 {FEATURED_DESTINATIONS.map((s, i) => (
                   <button
                     key={`featured-${i}`}
                     type="button"
-                    className="flex-shrink-0 w-[58px] group/card text-left outline-none"
+                    className="flex-shrink-0 w-[85px] group/card text-left outline-none"
                     onClick={() => handleSelect(s)}
                   >
-                    <div className="relative w-full aspect-[3/4] rounded-[8px] overflow-hidden mb-3 shadow-2xl border border-white/5 transition-all duration-700 group-hover/card:scale-[1.02] group-hover/card:-translate-y-1">
+                    <div className="relative w-full aspect-[4/5] rounded-[16px] overflow-hidden mb-4 shadow-2xl border border-white/10 transition-all duration-700 group-hover/card:scale-[1.05] group-hover/card:-translate-y-2 group-hover/card:border-white/30 group-hover/card:shadow-white/5">
                       <img
                         src={s.image}
                         alt={s.name}
-                        className="w-full h-full object-cover grayscale-[0.3] group-hover/card:grayscale-0 transition-all duration-700 group-hover/card:scale-110"
+                        className="w-full h-full object-cover transition-all duration-700 group-hover/card:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/card:opacity-60 transition-opacity" />
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white font-bold text-[10px] tracking-tight leading-tight">{s.name}</p>
-                        <div className="flex items-center gap-1.5 mt-1.5">
-
-                          <p className="text-white/50 text-[6px] uppercase font-black tracking-widest">{s.country}</p>
-                        </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 transition-opacity group-hover/card:opacity-70" />
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <p className="text-white font-bold text-[12px] tracking-tight leading-tight mb-1">{s.name}</p>
+                        <p className="text-white/50 text-[8px] uppercase font-bold tracking-[0.1em]">{s.country}</p>
                       </div>
                     </div>
                   </button>

@@ -3,10 +3,7 @@
 import { useTransition, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CalendarBlank,
   Sparkle,
-  CaretRight,
-  WarningCircle,
   Plus,
   Minus,
   Mountains,
@@ -15,10 +12,9 @@ import {
   CloudSun,
   Heart as HeartIcon,
   Camera,
-  Wallet,
-  Coins,
-  Crown,
   Lightning,
+  MapPin,
+  Calendar,
   Globe,
 } from "@phosphor-icons/react";
 import { useForm } from "react-hook-form";
@@ -36,11 +32,12 @@ import {
 } from "@/lib/schemas/itinerary";
 import LocationInput from "@/app/components/itinerary/location-input";
 import { useCredits } from "@/hooks/useCredits";
+import { Slider } from "@/components/ui/slider";
 
 const budgets = [
-  { label: "Budget", icon: Wallet, desc: "Value focused" },
-  { label: "Mid-Range", icon: Coins, desc: "Comfort & Style" },
-  { label: "Luxury", icon: Crown, desc: "High-end experience" },
+  { label: "Budget" },
+  { label: "Mid-Range" },
+  { label: "Luxury" },
 ] as const;
 
 const vibes = [
@@ -104,283 +101,179 @@ export default function NewItineraryPage() {
           });
         } else {
           toast.error("Generation Failed", {
-            description:
-              "Something went wrong while crafting your trip. Please try again.",
+            description: "Something went wrong while crafting your trip.",
           });
         }
       }
     });
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  };
+  const SubmitButton = ({ className }: { className?: string }) => (
+    <Button
+      type="submit"
+      disabled={isPending}
+      className={cn(
+        "h-12 w-full bg-black hover:bg-zinc-800 text-white rounded-xl font-medium shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 border-none",
+        className
+      )}
+    >
+      {isPending ? (
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          <span>Crafting...</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Sparkle weight="fill" className="w-4 h-4 text-amber-400" />
+          <span>Generate Itinerary</span>
+        </div>
+      )}
+    </Button>
+  );
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-6 lg:px-0 ">
-      <header className="mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-2"
-        >
-          <h1 className="text-5xl md:text-6xl font-sans font-semibold tracking-tight text-foreground leading-tight">
-            Plan a new <span className="text-terracotta">Journey.</span>
+    <div className="min-h-full bg-gray-50/50">
+      <div className="md:max-w-[800px] mx-auto px-4 lg:px-0">
+        <header className="mb-8 text-left lg:text-center">
+          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-zinc-900">
+            Plan a new Journey
           </h1>
-        </motion.div>
-      </header>
+          <p className="text-zinc-500 text-sm mt-2">
+            Fill in the details to craft your perfect travel story.
+          </p>
+        </header>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-16">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="space-y-16"
-        >
-          {/* Section 1: Destination & Duration */}
-          <motion.section
-            variants={item}
-            className="grid grid-cols-1 md:grid-cols-12 gap-10"
-          >
-            <div className="md:col-span-8 space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                  <Globe className="w-4 h-4 text-orange-500" weight="bold" />
-                </div>
-                <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  Where to?
-                </Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8 space-y-8">
+
+            {/* Section 1: Destination */}
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                Destination
+              </Label>
+              <div className="relative">
+                <LocationInput
+                  defaultValue={watch("destination")}
+                  onSelect={(loc) => {
+                    const fullName = loc.isFeatured
+                      ? `${loc.name}, ${loc.country}`
+                      : `${loc.name}${loc.city ? `, ${loc.city}` : ""}, ${loc.country}`;
+                    setValue("destination", fullName, { shouldValidate: true });
+                  }}
+                  disabled={isPending}
+                  className="h-12 rounded-xl border-gray-200 focus:ring-black/5"
+                  dropdownClassName="w-full bg-white border border-gray-200 shadow-xl rounded-xl mt-2 overflow-hidden z-50"
+                />
               </div>
-              <LocationInput
-                defaultValue={watch("destination")}
-                onSelect={(loc) => {
-                  const fullName = loc.isFeatured
-                    ? `${loc.name}, ${loc.country}`
-                    : `${loc.name}${loc.city ? `, ${loc.city}` : ""}, ${loc.country}`;
-                  setValue("destination", fullName, { shouldValidate: true });
-                }}
-                disabled={isPending}
-              />
               <AnimatePresence>
                 {errors.destination && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="text-xs text-destructive flex items-center gap-1.5 ml-1"
-                  >
-                    <WarningCircle className="w-3.5 h-3.5" />
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 mt-1">
                     {errors.destination.message}
                   </motion.p>
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="md:col-span-4 space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                  <CalendarBlank
-                    className="w-4 h-4 text-orange-500"
-                    weight="bold"
-                  />
-                </div>
-                <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  Days
-                </Label>
-              </div>
-              <div className="flex items-center h-14 bg-accent/20 rounded-xl border border-border/50 p-1.5 glass group focus-within:ring-2 focus-within:ring-orange-500/20 transition-all">
+            {/* Section 2: Days Stepper */}
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                Duration
+              </Label>
+              <div className="flex items-center justify-between h-12 bg-gray-50/50 border border-gray-100 rounded-xl px-2 w-full sm:w-48">
                 <button
                   type="button"
                   disabled={duration <= 1 || isPending}
-                  onClick={() =>
-                    setValue("duration", Math.max(1, duration - 1))
-                  }
-                  className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-accent/40 text-muted-foreground disabled:opacity-30"
+                  onClick={() => setValue("duration", Math.max(1, duration - 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 disabled:opacity-30 transition-all"
                 >
-                  <Minus weight="bold" className="w-4 h-4" />
+                  <Minus weight="bold" className="w-3 h-3" />
                 </button>
-                <div className="flex-1 text-center">
-                  <span className="text-xl font-black font-sans">
-                    {duration}
-                  </span>
-                </div>
+                <span className="text-sm font-semibold text-zinc-900 tabular-nums">
+                  {duration} {duration === 1 ? 'Day' : 'Days'}
+                </span>
                 <button
                   type="button"
                   disabled={duration >= 3 || isPending}
-                  onClick={() =>
-                    setValue("duration", Math.min(3, duration + 1))
-                  }
-                  className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-accent/40 text-muted-foreground disabled:opacity-30"
+                  onClick={() => setValue("duration", Math.min(3, duration + 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 disabled:opacity-30 transition-all"
                 >
-                  <Plus weight="bold" className="w-4 h-4" />
+                  <Plus weight="bold" className="w-3 h-3" />
                 </button>
               </div>
             </div>
-          </motion.section>
 
-          {/* Section 2: Budget */}
-          <motion.section variants={item} className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <Wallet className="w-4 h-4 text-orange-500" weight="bold" />
-              </div>
-              <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                Budget Level
+            {/* Section 3: Vibe Selection */}
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                Trip Vibe
               </Label>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {budgets.map((b) => (
-                <button
-                  key={b.label}
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => setValue("budget", b.label as any)}
-                  className={cn(
-                    "relative flex items-center gap-4 p-5 rounded-lg border transition-all duration-300 text-left group",
-                    selectedBudget === b.label
-                      ? "bg-orange-500/10 border-orange-500 shadow-lg shadow-orange-900/10"
-                      : "bg-accent/10 border-border/50 text-muted-foreground hover:bg-accent/20",
-                  )}
-                >
-                  <div
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {vibes.map((v) => (
+                  <button
+                    key={v.label}
+                    type="button"
+                    onClick={() => setValue("vibe", v.label as any)}
                     className={cn(
-                      "w-12 h-12 rounded-lg flex items-center justify-center transition-colors",
-                      selectedBudget === b.label
-                        ? "bg-orange-500 text-white"
-                        : "bg-accent/20 group-hover:bg-accent/40",
+                      "flex items-center gap-2 px-4 py-3 rounded-xl border text-left transition-all duration-200",
+                      selectedVibe === v.label
+                        ? "bg-zinc-900 border-zinc-900 text-white shadow-md ring-2 ring-black/5"
+                        : "bg-white border-gray-200 text-zinc-600 hover:border-zinc-300 hover:bg-gray-50"
                     )}
                   >
-                    <b.icon
-                      className="w-6 h-6"
-                      weight={selectedBudget === b.label ? "fill" : "regular"}
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <span
-                      className={cn(
-                        "font-bold text-sm",
-                        selectedBudget === b.label ? "text-foreground" : "",
-                      )}
-                    >
+                    <v.icon className={cn("w-4 h-4", selectedVibe === v.label ? "text-amber-400" : "text-zinc-400")} />
+                    <span className="text-xs font-medium">{v.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 4: Budget Level */}
+            <div className="space-y-6">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                Budget Level
+              </Label>
+              <div className="px-2">
+                <Slider
+                  min={0}
+                  max={2}
+                  step={1}
+                  value={[budgets.findIndex((b) => b.label === selectedBudget)]}
+                  onValueChange={(vals) => setValue("budget", budgets[vals[0]].label as any)}
+                  className="[&_[data-slot=slider-range]]:bg-zinc-900 [&_[data-slot=slider-thumb]]:border-zinc-900"
+                />
+                <div className="mt-4 flex w-full items-center justify-between text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                  {budgets.map((b) => (
+                    <span key={b.label} className={cn("transition-colors", selectedBudget === b.label ? "text-zinc-900" : "")}>
                       {b.label}
                     </span>
-                    <span className="text-[10px] uppercase font-black tracking-widest opacity-40">
-                      {b.desc}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* Section 3: Vibe */}
-          <motion.section variants={item} className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <Sparkle className="w-4 h-4 text-orange-500" weight="bold" />
-              </div>
-              <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                Select a Vibe
-              </Label>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-              {vibes.map((v) => (
-                <button
-                  key={v.label}
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => setValue("vibe", v.label as any)}
-                  className={cn(
-                    "flex flex-col items-center gap-3 p-4 rounded-lg border transition-all duration-300 group",
-                    selectedVibe === v.label
-                      ? "bg-white text-black border-white shadow-xl scale-[1.02]"
-                      : "bg-accent/10 border-border/50 text-muted-foreground hover:bg-accent/20",
-                  )}
-                >
-                  <v.icon
-                    className={cn(
-                      "w-6 h-6 transition-transform group-hover:scale-110",
-                      selectedVibe === v.label
-                        ? "text-black"
-                        : "text-muted-foreground",
-                    )}
-                    weight={selectedVibe === v.label ? "fill" : "regular"}
-                  />
-                  <span className="text-[11px] font-bold uppercase tracking-wider">
-                    {v.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <AnimatePresence>
-              {errors.vibe && (
-                <motion.p
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="text-xs text-destructive flex items-center gap-1.5 ml-1"
-                >
-                  <WarningCircle className="w-3.5 h-3.5" />
-                  {errors.vibe.message}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </motion.section>
-        </motion.div>
-
-        {/* Footer: Credit Status & Generate */}
-        <footer className="space-y-6 pt-6">
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                <Lightning className="w-5 h-5 text-orange-500" weight="fill" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Available Balance
-                </span>
-                <span className="text-xs font-bold">
-                  {credits ?? "—"} Credits
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="w-full h-18 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xl font-bold rounded-lg shadow-orange-950/40 transition-all active:scale-[0.98] group disabled:opacity-70 disabled:cursor-not-allowed border-none"
-          >
-            {isPending ? (
-              <div className="flex items-center gap-4">
-                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                <span className="tracking-tight">Crafting your story...</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between w-full px-4">
-                <div className="flex items-center gap-3">
-                  <Sparkle
-                    className="w-6 h-6 group-hover:rotate-12 transition-transform"
-                    weight="fill"
-                  />
-                  <span>Generate Itinerary</span>
+                  ))}
                 </div>
-                <CaretRight className="w-6 h-6 opacity-40 group-hover:translate-x-1 transition-transform" />
               </div>
-            )}
-          </Button>
-        </footer>
-      </form>
+            </div>
+
+            {/* Desktop CTA */}
+            <div className="hidden lg:block pt-4">
+              <SubmitButton />
+              {/* <div className="mt-4 flex justify-center items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                <Lightning weight="fill" className="w-3 h-3 text-amber-400" />
+                <span>{credits ?? "—"} Credits Available</span>
+              </div> */}
+            </div>
+
+          </div>
+        </form>
+
+        {/* Mobile Sticky CTA */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-8 z-50 shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+          <div className="max-w-[640px] mx-auto flex flex-col gap-3">
+            <div className="flex justify-center items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+              <Lightning weight="fill" className="w-3 h-3 text-amber-400" />
+              <span>{credits ?? "—"} Credits Available</span>
+            </div>
+            <SubmitButton />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

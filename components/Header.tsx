@@ -48,8 +48,8 @@ export default function Header() {
         "fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-14 py-4 md:py-6 transition-all duration-500",
         (scrolled || isOpen)
           ? isLandingPage 
-            ? "bg-white/80 backdrop-blur-xl border-b border-navy/10 py-3 md:py-4 shadow-xl"
-            : "bg-black/30 backdrop-blur-xl border-b border-sand/10 py-3 md:py-4 shadow-xl"
+            ? "bg-white/10 backdrop-blur-xl border-b border-navy/10 py-3 md:py-4 shadow-xl"
+            : "bg-black/10 backdrop-blur-xl border-b border-sand/10 py-3 md:py-4 shadow-xl"
           : "bg-transparent"
       )}
     >
