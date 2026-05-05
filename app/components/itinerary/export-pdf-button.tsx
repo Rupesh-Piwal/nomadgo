@@ -12,7 +12,7 @@ interface ExportPdfButtonProps {
 
 export default function ExportPdfButton({ itineraryId }: ExportPdfButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { fetchCredits } = useCredits(); // Refresh credits after deduction
+  const { fetchCredits } = useCredits();
 
   const handleExport = async () => {
     try {
@@ -35,17 +35,17 @@ export default function ExportPdfButton({ itineraryId }: ExportPdfButtonProps) {
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = `NomadGo-Itinerary-${itineraryId.slice(0, 8)}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+
       window.URL.revokeObjectURL(url);
 
-      toast.success("PDF Downloaded successfully!");
-      
-      // Update credits asynchronously
+      toast.success("PDF downloaded successfully!");
       fetchCredits();
 
     } catch (error: any) {
@@ -56,18 +56,46 @@ export default function ExportPdfButton({ itineraryId }: ExportPdfButtonProps) {
   };
 
   return (
-    <Button 
-      variant="ghost" 
-      className="h-14 px-10 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-bold uppercase text-[11px] tracking-[0.2em] transition-all duration-500 active:scale-95 gap-3"
+    <Button
+      variant="ghost"
       onClick={handleExport}
       disabled={isGenerating}
+      className="
+        relative overflow-hidden
+        h-12 px-8 
+        bg-gradient-to-b from-[#d97742] to-[#C4632C]
+        text-white 
+        rounded-full 
+        font-semibold uppercase text-[11px] tracking-[0.18em]
+
+        flex items-center justify-center gap-2.5
+
+        shadow-[0_8px_20px_rgba(196,99,44,0.35)]
+        hover:shadow-[0_12px_28px_rgba(196,99,44,0.45)]
+
+        hover:-translate-y-[1px]
+        active:translate-y-[1px] active:shadow-[0_4px_12px_rgba(196,99,44,0.3)]
+
+        transition-all duration-300 ease-out
+
+        border border-[#e08a55]/30
+        backdrop-blur-sm
+
+        disabled:opacity-70 disabled:cursor-not-allowed
+      "
     >
-      {isGenerating ? (
-        <CircleNotch className="w-4 h-4 animate-spin text-orange-400" />
-      ) : (
-        <DownloadSimple className="w-4 h-4 text-orange-400" />
-      )}
-      {isGenerating ? "Processing..." : "Save PDF"}
+      {/* subtle shine overlay */}
+      <span className="absolute inset-0 rounded-full bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+
+      {/* content */}
+      <span className="relative z-10 flex items-center gap-2.5">
+        {isGenerating ? (
+          <CircleNotch className="w-4 h-4 animate-spin" />
+        ) : (
+          <DownloadSimple className="w-4 h-4" />
+        )}
+        {isGenerating ? "Generating..." : "Download PDF"}
+      </span>
     </Button>
   );
 }

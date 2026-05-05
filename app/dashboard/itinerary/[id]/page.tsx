@@ -45,6 +45,11 @@ interface SuggestedStay {
 interface ItineraryData {
   destination: string;
   heroImage?: string;
+  estimatedTotalExpense?: string;
+  estimatedCostINR?: { min: number; max: number };
+  placesCount?: number;
+  totalDistanceKm?: number;
+  difficulty?: string;
   days: Day[];
   travelTips?: string[];
   bestTimeToVisit?: string;
@@ -72,10 +77,10 @@ export default async function ItineraryViewPage({ params }: { params: Promise<{ 
   // 2. Handle Failure
   if (itinerary.status === ItineraryStatus.FAILED) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-white p-6">
-        <h1 className="text-2xl font-serif mb-4">Generation Failed</h1>
-        <p className="text-zinc-400 mb-8">Something went wrong while crafting your trip. Please try again.</p>
-        <a href="/dashboard/itinerary/new" className="px-6 py-2 bg-orange-600 rounded-xl font-bold">Try New Trip</a>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F6F6F7] p-6">
+        <h1 className="text-3xl font-serif text-zinc-900 mb-4">Generation Failed</h1>
+        <p className="text-zinc-500 mb-8">Something went wrong while crafting your trip. Please try again.</p>
+        <a href="/dashboard/itinerary/new" className="px-8 py-3 bg-zinc-900 text-white rounded-full font-bold hover:bg-black transition-all">Try New Trip</a>
       </div>
     );
   }

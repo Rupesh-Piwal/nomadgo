@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import Image from "next/image";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
-import { Clock } from "@phosphor-icons/react";
 
 interface Activity {
   title: string;
@@ -58,7 +56,7 @@ const createCustomIcon = (activity: any, isActive: boolean) => {
     <div class="absolute bottom-[54px] left-1/2 -translate-x-1/2 w-[340px] h-[110px] bg-white rounded-[12px] shadow-[0_8px_24px_rgba(0,0,0,0.12)] z-20 flex flex-row border border-navy/10 animate-in fade-in zoom-in duration-300">
       ${imageUrl ? `<div class="w-[110px] h-full shrink-0 rounded-l-[11px] overflow-hidden bg-gray-100"><img src="${imageUrl}" class="w-full h-full object-cover" alt="" /></div>` : ''}
       <div class="p-3 flex flex-col justify-center flex-1 overflow-hidden">
-        <h4 class="font-bold text-navy text-[15px] leading-tight truncate mb-1">${activity.title}</h4>
+        <h4 class="font-semibold text-navy text-[15px] leading-tight truncate mb-1">${activity.title}</h4>
         
         <div class="flex items-center text-[13px] text-navy/70 mb-1.5 font-medium">
           <span class="text-navy mr-1.5 text-[11px]">★</span> 

@@ -23,7 +23,7 @@ const activitySchema = z.object({
   image: z.string().nullable().describe("URL to an image of the location"),
   lat: z.number().describe("Latitude coordinate"),
   lng: z.number().describe("Longitude coordinate"),
-  timeOfDay: z.enum(["Morning", "Afternoon", "Evening"]).describe("The best time of day for this activity"),
+  timeOfDay: z.enum(["Morning", "Lunchtime", "Afternoon", "Evening"]).describe("The best time of day for this activity"),
   category: z.nativeEnum(ActivityCategory).describe("The primary category of this location"),
   mealType: z.nativeEnum(MealType).describe("If this is a restaurant, which meal is it best for? Use NONE if not a restaurant."),
   cuisine: z.string().optional().describe("If this is a restaurant, what is the primary cuisine? e.g. 'Italian', 'Japanese', 'Street Food'"),
@@ -54,6 +54,14 @@ const itinerarySchema = z.object({
   destination: z.string(),
   lat: z.number().describe("The latitude of the destination center"),
   lng: z.number().describe("The longitude of the destination center"),
+  estimatedTotalExpense: z.string().describe("Estimated total trip expense for ALL days combined (excluding flights/accommodation), e.g. '$250-$400'"),
+  estimatedCostINR: z.object({
+    min: z.number(),
+    max: z.number()
+  }).describe("Total trip cost in INR for conversion purposes"),
+  placesCount: z.number().describe("Total number of unique places/stops in the itinerary"),
+  totalDistanceKm: z.number().describe("Total estimated travel distance between all stops in kilometers"),
+  difficulty: z.enum(["Easy", "Moderate", "Hard"]).describe("The physical/pacing difficulty of the trip"),
   travelTips: z.array(z.string()).describe("3-5 essential travel tips specific to this destination"),
   bestTimeToVisit: z.string().describe("Best months or season to visit, e.g. 'April to June, September to October'"),
   localCurrency: z.string().describe("Local currency name and rough USD exchange rate, e.g. 'Euro (€1 ≈ $1.08)'"),
@@ -110,11 +118,14 @@ export async function generateItinerary({
       6. Accuracy: For the destination and all activities, provide realistic latitude/longitude coordinates and REAL street addresses.
       7. Imagery: Leave the image field as null (we will handle it later).
       8. Travel Transitions: For each activity EXCEPT the first one of each day, provide realistic travel info (mode, duration, distance) from the previous stop. Prefer walking for short distances (<1km), public transit for medium, taxi for long.
-      9. Pro Tips: For each activity, provide a genuinely useful insider tip that a first-time visitor wouldn't know.
+      9. Pro Tips: For each activity, provide a short 'Must-Try' tip (e.g., 'Best photo spot at sunrise' or 'Order the matcha latte'). These will be used as tag-style highlights.
       10. Day Summary: Each day MUST have a 1-2 sentence summary and an estimated total cost range.
+      14. Total Expense: Calculate the estimated total trip expense by summing all daily costs. Provide BOTH a USD string range (e.g. '$300-$500') and an INR numeric object (e.g. {min: 25000, max: 40000}).
+      16. Metadata: Calculate total unique places visited, total travel distance in KM, and overall difficulty (Easy/Moderate/Hard).
       11. Accommodation: Suggest 3-4 places to stay that match the ${budget} budget level. Include the neighborhood and nightly price range.
       12. Destination Intel: Provide travel tips, best time to visit, local currency with exchange rate, and primary language.
-      13. AI Insight: For every activity, provide a highly specific 'aiInsight'. This should be a fascinating insider secret, a 'what to order' tip, or a personalized explanation of why this spot matches the user's '${vibe}' vibe.
+      13. AI Insight: For every activity, provide a highly specific 'aiInsight'. This should be a fascinating insider secret or a personalized explanation of why this spot matches the user's '${vibe}' vibe.
+      15. Sequencing: Use 'Morning' for early activities, 'Lunchtime' specifically for the mid-day meal, 'Afternoon' for post-lunch spots, and 'Evening' for dinner and late-night activities.
     `,
   });
 

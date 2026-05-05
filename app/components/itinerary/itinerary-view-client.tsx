@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
-import { MapPin, ArrowRight, Share, X, Languages, Sun, Building2, DollarSign, CircleChevronUp, Sparkle, ArrowDownToDot, Compass } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Languages, Sun, ArrowRight, Download } from "lucide-react";
 
 import MapWrapper from "@/app/components/itinerary/map-wrapper";
 import ExportPdfButton from "@/app/components/itinerary/export-pdf-button";
-import { DayOpener, EditorialActivityScene } from "@/app/components/itinerary/cinematic-scenes";
+import TripSummary from "@/app/components/itinerary/trip-summary";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -22,11 +22,13 @@ interface Activity {
   image: string | null;
   lat: number;
   lng: number;
-  timeOfDay: "Morning" | "Afternoon" | "Evening";
+  timeOfDay: "Morning" | "Lunchtime" | "Afternoon" | "Evening";
   category?: string;
   mealType?: string;
+  cuisine?: string;
   rating?: number;
   priceLevel?: string;
+  aiInsight?: string;
   address?: string;
   duration?: string;
   proTip?: string;
@@ -50,6 +52,11 @@ interface SuggestedStay {
 
 interface ItineraryData {
   destination: string;
+  estimatedTotalExpense?: string;
+  estimatedCostINR?: { min: number; max: number };
+  placesCount?: number;
+  totalDistanceKm?: number;
+  difficulty?: string;
   days: Day[];
   travelTips?: string[];
   bestTimeToVisit?: string;
@@ -70,40 +77,7 @@ interface ItineraryViewClientProps {
   heroImage: string;
 }
 
-// ─── Animated Counter ──────────────────────────────────────────
-
-function AnimatedCounter({ to, duration = 1.5 }: { to: number; duration?: number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const hasRun = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasRun.current) {
-          hasRun.current = true;
-          const start = Date.now();
-          const tick = () => {
-            const elapsed = (Date.now() - start) / 1000;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.floor(eased * to));
-            if (progress < 1) requestAnimationFrame(tick);
-            else setCount(to);
-          };
-          requestAnimationFrame(tick);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [to, duration]);
-
-  return <span ref={ref}>{count}</span>;
-}
-
-// ─── Sticky Day Navigator ──────────────────────────────────────
+// ─── Sticky Day Navigator (Minimal Side Dots) ──────────────────
 
 function StickyDayNav({ days, activeScrollDay }: { days: Day[]; activeScrollDay: number | null }) {
   return (
@@ -114,10 +88,9 @@ function StickyDayNav({ days, activeScrollDay }: { days: Day[]; activeScrollDay:
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed top-1/2 left-6 md:left-10 -translate-y-1/2 z-[150] hidden lg:flex flex-col items-center py-10"
+          className="fixed top-1/2 left-6 -translate-y-1/2 z-[150] hidden lg:flex flex-col items-center py-8"
         >
-          {/* Continuous Vertical Line */}
-          <div className="absolute top-0 bottom-0 w-px bg-white/10 left-1/2 -translate-x-1/2" />
+          <div className="absolute top-0 bottom-0 w-px bg-zinc-200 left-1/2 -translate-x-1/2" />
 
           {days.map((day) => {
             const isActive = activeScrollDay === day.day;
@@ -125,28 +98,27 @@ function StickyDayNav({ days, activeScrollDay }: { days: Day[]; activeScrollDay:
               <button
                 key={day.day}
                 onClick={() => document.getElementById(`day-${day.day}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="relative py-6 flex items-center justify-center group outline-none"
+                className="relative py-5 flex items-center justify-center group outline-none"
                 aria-label={`Scroll to Day ${day.day}`}
               >
                 {isActive ? (
                   <motion.div
                     layoutId="active-dot"
-                    className="relative z-10 w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.2)] border border-white/10"
+                    className="relative z-10 w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg"
                   >
-                    <span className="text-[14px] font-black text-black">{day.day}</span>
+                    <span className="text-[12px] font-black text-white">{day.day}</span>
                   </motion.div>
                 ) : (
-                  <div className="relative z-10 w-2.5 h-2.5 rounded-full bg-white/40 group-hover:bg-white/80 transition-all duration-300 group-hover:scale-125" />
+                  <div className="relative z-10 w-2.5 h-2.5 rounded-full bg-zinc-300 group-hover:bg-zinc-900 transition-all duration-300 group-hover:scale-125" />
                 )}
 
-                {/* Tooltip on Hover */}
-                <div className="absolute left-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0 pointer-events-none whitespace-nowrap">
-                  <span className="bg-zinc-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] px-4 py-2 rounded-xl border border-white/10 shadow-2xl block">
+                <div className="absolute left-12 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap">
+                  <span className="bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-xl block">
                     Day {day.day}
                   </span>
                 </div>
               </button>
-            )
+            );
           })}
         </motion.div>
       )}
@@ -154,47 +126,41 @@ function StickyDayNav({ days, activeScrollDay }: { days: Day[]; activeScrollDay:
   );
 }
 
-// ─── Know Before You Go ────────────────────────────────────────
+// ─── Essential Intel ───────────────────────────────────────────
 
-function KnowBeforeYouGo({ data }: { data: ItineraryData }) {
+function EssentialIntel({ data }: { data: ItineraryData }) {
   const hasIntel = data.language || data.bestTimeToVisit || (data.travelTips && data.travelTips.length > 0);
   if (!hasIntel) return null;
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      className="mb-24"
-    >
-      <div className="flex items-center gap-6 mb-12">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Essential Intel</span>
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+    <section className="mb-16">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="h-px flex-1 bg-zinc-200" />
+        <span className="text-[16px] font-semibold uppercase tracking-[0.3em] text-[#C4632C]">Essential Intel</span>
+        <div className="h-px flex-1 bg-zinc-200" />
       </div>
 
       {(data.language || data.bestTimeToVisit) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-12 mb-12">
+        <div className="flex flex-wrap items-center gap-4 mb-10">
           {data.language && (
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 bg-zinc-900 rounded-xl border border-white/5">
-                <Languages className="w-4 h-4 text-orange-400" />
+            <div className="flex items-center gap-3 bg-white rounded-[16px] px-5 py-3 border border-zinc-200 shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-[#C4632C]/10 flex items-center justify-center">
+                <Languages className="w-4 h-4 text-[#C4632C]" />
               </div>
               <div>
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 block">Language</span>
-                <span className="text-[15px] font-semibold text-white mt-0.5 block">{data.language}</span>
+                <span className="text-[9px]  font-semibold uppercase tracking-wider text-zinc-400 block">Language</span>
+                <span className="text-[11px] md:text-sm font-semibold text-zinc-900">{data.language}</span>
               </div>
             </div>
           )}
           {data.bestTimeToVisit && (
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 bg-zinc-900 rounded-xl border border-white/5">
-                <Sun className="w-4 h-4 text-orange-400" />
+            <div className="flex items-center gap-3 bg-white rounded-[16px] px-5 py-3 border border-zinc-200 shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-[#C4632C]/10 flex items-center justify-center">
+                <Sun className="w-4 h-4 text-[#C4632C]" />
               </div>
               <div>
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 block">Best Time to Visit</span>
-                <span className="text-[15px] font-semibold text-white mt-0.5 block">{data.bestTimeToVisit}</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 block">Best Time to Visit</span>
+                <span className="text-[11px] text-sm font-semibold text-zinc-900">{data.bestTimeToVisit}</span>
               </div>
             </div>
           )}
@@ -202,27 +168,201 @@ function KnowBeforeYouGo({ data }: { data: ItineraryData }) {
       )}
 
       {data.travelTips && data.travelTips.length > 0 && (
-        <div className="space-y-6 pl-1">
+        <div className="space-y-4 pl-1">
           {data.travelTips.map((tip, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -15 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.6 }}
-              className="flex items-start gap-5 group/tip"
+              transition={{ delay: i * 0.06, duration: 0.5 }}
+              className="flex items-start gap-4 group/tip"
             >
-              <span className="text-[2rem] font-sans italic text-zinc-800 leading-none mt-[-4px] group-hover/tip:text-orange-400/50 transition-colors duration-500 select-none">
+              <span className="text-2xl font-serif italic text-zinc-300 leading-none mt-0.5 group-hover/tip:text-[#C4632C] transition-colors select-none min-w-[2rem]">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <p className="text-[14px] text-zinc-400 leading-relaxed pt-1 border-l border-white/5 pl-5 group-hover/tip:border-orange-400/30 transition-colors duration-500">
+              <p className="text-[14px] text-zinc-600 leading-relaxed pt-0.5 border-l-2 border-zinc-100 pl-4 group-hover/tip:border-[#C4632C] transition-colors">
                 {tip}
               </p>
             </motion.div>
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+// ─── Day Editorial Section ─────────────────────────────────────
+
+function DaySection({ day, onActivityInView }: { day: Day; onActivityInView: (activity: Activity) => void }) {
+  // Group activities by timeOfDay with explicit order
+  const groups = useMemo(() => {
+    const order = ["Morning", "Lunchtime", "Afternoon", "Evening"];
+    const map: Record<string, Activity[]> = {};
+    day.activities.forEach((a) => {
+      const key = a.timeOfDay;
+      if (!map[key]) map[key] = [];
+      map[key].push(a);
+    });
+    // Sort keys based on the desired order
+    const sortedEntries = Object.entries(map).sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
+    return sortedEntries;
+  }, [day.activities]);
+
+  // Get images (up to 2 for the grid)
+  const activityImages = day.activities.filter((a) => a.image);
+
+  return (
+    <motion.section
+      id={`day-${day.day}`}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="mb-20 scroll-mt-8"
+    >
+      {/* Day Header */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-1 h-10 bg-[#C4632C] rounded-full" />
+        <h2 className="text-2xl font-sans text-zinc-900 tracking-tight">Day {day.day}</h2>
+      </div>
+
+      {/* Activity Image Grid (top 2 images) */}
+      {activityImages.length > 0 && (
+        <div className={`grid ${activityImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mb-6`}>
+          {activityImages.slice(0, 2).map((activity, idx) => (
+            <div key={idx} className="group">
+              <div className="aspect-video rounded-[16px] overflow-hidden bg-zinc-100 relative">
+                <img
+                  src={activity.image!}
+                  alt={activity.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              {/* Caption */}
+              <div className="mt-2.5 px-1">
+                <h4 className="text-sm font-semibold text-zinc-900 truncate">{activity.title}</h4>
+                <div className="flex items-center gap-3 mt-1">
+                  {activity.rating && (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 text-[#C4632C] fill-orange-700/30" />
+                      <span className="text-xs font-semibold text-zinc-700">{activity.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                  {activity.category && (
+                    <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">{activity.category}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Day Summary */}
+      {day.title && (
+        <p className="text-lg font-semibold text-zinc-800 mb-2 mt-6">{day.title}</p>
+      )}
+      {day.summary && (
+        <p className="text-sm text-zinc-500 mb-6 leading-relaxed">{day.summary}</p>
+      )}
+
+      {/* Time-of-Day Sections */}
+      {groups.map(([timeOfDay, activities]) => (
+        <div key={timeOfDay} className="mb-8">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#C4632C] mb-4">
+            {timeOfDay}
+          </h3>
+          <ul className="space-y-4 pl-1">
+            {activities.map((activity, idx) => (
+              <ActivityBullet key={idx} activity={activity} onInView={onActivityInView} />
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      {/* Must-Trys Tags */}
+      {day.activities.some((a) => a.proTip) && (
+        <div className="mt-6 pt-4 border-t border-zinc-100">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#C4632C] block mb-3">Must-Trys</span>
+          <div className="flex flex-wrap gap-2">
+            {day.activities
+              .filter((a) => a.proTip)
+              .map((a, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#C4632C]/30 rounded-full text-[11px] font-medium text-zinc-700 hover:border-orange-300 hover:text-orange-600 transition-colors cursor-default"
+                >
+                  <span className="text-[#C4632C]">✦</span>
+                  {a.proTip!.length > 50 ? a.proTip!.slice(0, 50) + "…" : a.proTip}
+                </span>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* Estimated Cost */}
+      {day.estimatedCost && (
+        <div className="mt-4 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+          Est. daily spend: <span className="text-zinc-700">{day.estimatedCost}</span>
+        </div>
+      )}
     </motion.section>
+  );
+}
+
+// ─── Activity Bullet Point ─────────────────────────────────────
+
+function ActivityBullet({ activity, onInView }: { activity: Activity; onInView: (a: Activity) => void }) {
+  const ref = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) onInView(activity); },
+      { threshold: 0.6 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activity, onInView]);
+
+  return (
+    <li ref={ref} className="relative pl-5 border-l-2 border-zinc-100 hover:border-orange-300 transition-colors group/item">
+      <div className="absolute left-[-5px] top-2 w-2 h-2 rounded-full bg-zinc-200 group-hover/item:bg-orange-400 transition-colors" />
+
+      <p className="text-[13px] md:text-[14px] text-zinc-700 leading-relaxed">
+        <span className="font-bold text-zinc-900">{activity.title}</span>
+        {activity.address && (
+          <span className="text-zinc-400"> — {activity.address}</span>
+        )}
+      </p>
+      <p className="text-[12px] md:text-[13px] text-zinc-500 leading-relaxed mt-1">{activity.description}</p>
+
+      {activity.aiInsight && (
+        <p className="text-[10px] md:text-[12px] text-[#C4632C] font-sans mt-2 bg-[#C4632C]/10 rounded-[16px] px-3 py-1.5 inline-block">
+          💡 {activity.aiInsight}
+        </p>
+      )}
+
+      {/* Meta row */}
+      <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-zinc-400">
+        {activity.duration && <span>⏱ {activity.duration}</span>}
+        {activity.rating && (
+          <span className="flex items-center gap-0.5">
+            <Star className="w-3 h-3 text-[#C4632C] fill-orange-700/30" />
+            {activity.rating.toFixed(1)}
+          </span>
+        )}
+        {activity.cuisine && <span>🍽 {activity.cuisine}</span>}
+        {activity.travelFromPrevious && (
+          <span className="text-zinc-500 border border-zinc-300 border-dotted p-[0.5px] rounded-[5px]">
+            → {activity.travelFromPrevious.mode} · {activity.travelFromPrevious.duration}
+          </span>
+        )}
+      </div>
+    </li>
   );
 }
 
@@ -236,106 +376,54 @@ function WhereToStay({ stays, destination }: { stays?: SuggestedStay[]; destinat
   };
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="mb-16"
-    >
-      {/* Minimal header */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="h-px w-6 bg-gradient-to-r from-transparent to-orange-500/40" />
-        <div className="flex items-center gap-1.5">
-          <span className="text-[8px] font-black uppercase tracking-[0.3em] text-orange-400/80">✦</span>
-          <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-500">STAY</span>
-          <span className="text-[8px] font-black uppercase tracking-[0.3em] text-orange-400/80">✦</span>
-        </div>
-        <div className="h-px flex-1 bg-gradient-to-r from-orange-500/40 to-transparent" />
+    <section className="mb-16">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="h-px flex-1 bg-zinc-200" />
+        <span className="text-[16px] font-semibold uppercase tracking-[0.3em] text-[#C4632C]">Where to Stay</span>
+        <div className="h-px flex-1 bg-zinc-200" />
       </div>
 
-      {/* Responsive grid – no scroll */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {stays.map((stay, i) => {
           const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(stay.name + " " + destination)}`;
           return (
-            <motion.a
+            <a
               key={i}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.06, duration: 0.5 }}
               href={searchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block rounded-xl bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 backdrop-blur-sm border border-white/10 hover:border-orange-500/30 transition-all duration-400 hover:shadow-xl hover:shadow-orange-500/5 overflow-hidden"
+              className="group block rounded-[16px] bg-white border border-zinc-200 p-4 hover:border-[#C4632C] hover:shadow-lg transition-all duration-300"
             >
-              {/* Decorative corner accent */}
-              <div className="absolute top-0 right-0 w-12 h-12 bg-orange-500/5 rounded-bl-2xl group-hover:bg-orange-500/10 transition-all duration-500" />
-
-              <div className="p-4">
-                {/* Top row: icon + type */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-800/80 border border-white/5 flex items-center justify-center text-base group-hover:scale-110 transition-transform duration-300">
-                      {stayEmoji[stay.type] || "🏨"}
-                    </div>
-                    <span className="text-[9px] font-black uppercase tracking-[0.15em] text-orange-400/80 bg-orange-400/5 px-2 py-0.5 rounded-full border border-orange-400/15">
-                      {stay.type}
-                    </span>
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-orange-500 transition-all duration-300">
-                    <ArrowRight className="w-3 h-3 text-white group-hover:text-black transition-colors" />
-                  </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{stayEmoji[stay.type] || "🏨"}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#C4632C] bg-[#C4632C]/10 px-2 py-0.5 rounded-full">
+                    {stay.type}
+                  </span>
                 </div>
-
-                {/* Name + neighborhood */}
-                <div className="mb-3">
-                  <h3 className="text-base font-bold text-white tracking-tight group-hover:text-orange-400 transition-colors truncate">
-                    {stay.name}
-                  </h3>
-                  <p className="text-[10px] text-zinc-500 font-medium mt-0.5 truncate">
-                    {stay.neighborhood}
-                  </p>
-                </div>
-
-                {/* Price range - compact */}
-                <div className="flex items-baseline justify-between pt-2 border-t border-white/5">
-                  <div>
-                    <span className="text-sm font-bold text-white tracking-tight">{stay.priceRange}</span>
-                    <span className="text-[9px] text-zinc-600 ml-1">/ night</span>
-                  </div>
-                  <div className="text-[9px] text-zinc-600 uppercase tracking-wider">
-                    Book →
-                  </div>
-                </div>
+                <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-[#C4632C] transition-colors" />
               </div>
-            </motion.a>
+              <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-[#C4632C] transition-colors truncate">{stay.name}</h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5 truncate">{stay.neighborhood}</p>
+              <div className="mt-3 pt-2 border-t border-zinc-100 flex items-baseline justify-between">
+                <span className="text-sm font-bold text-zinc-900">{stay.priceRange}</span>
+                <span className="text-[9px] text-zinc-400 uppercase tracking-wider">/ night</span>
+              </div>
+            </a>
           );
         })}
       </div>
-    </motion.section>
+    </section>
   );
 }
 
 // ─── Main Component ────────────────────────────────────────────
 
 export default function ItineraryViewClient({ itinerary, data, heroImage }: ItineraryViewClientProps) {
+  const [activeActivity, setActiveActivity] = useState<Activity | null>(null);
   const [activeActivityIndex, setActiveActivityIndex] = useState<number | null>(null);
-  const [activeDay, setActiveDay] = useState<number | null>(null);         // for map
-  const [activeScrollDay, setActiveScrollDay] = useState<number | null>(null); // for sticky nav
-  const [scrolled, setScrolled] = useState(false);
+  const [activeScrollDay, setActiveScrollDay] = useState<number | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // ── Scroll-linked Hero Animations ──
-  const { scrollY } = useScroll({ container: scrollContainerRef });
-  const heroScale = useTransform(scrollY, [0, 500], [1, 1.15]);
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0.4]);
-  const textY = useTransform(scrollY, [0, 400], [0, -60]);
-  const textOpacity = useTransform(scrollY, [0, 300], [1, 0]);
-
-  const smoothHeroScale = useSpring(heroScale, { damping: 20, stiffness: 100 });
-  const smoothTextY = useSpring(textY, { damping: 20, stiffness: 100 });
 
   const flatActivities = useMemo(() => {
     const arr: (Activity & { dayNumber: number })[] = [];
@@ -347,30 +435,26 @@ export default function ItineraryViewClient({ itinerary, data, heroImage }: Itin
     return arr;
   }, [data.days]);
 
-  // Sync activeDay with activeActivityIndex
-  useEffect(() => {
-    if (activeActivityIndex !== null && flatActivities[activeActivityIndex]) {
-      const dayNum = flatActivities[activeActivityIndex].dayNumber;
-      if (dayNum !== activeDay) {
-        setActiveDay(dayNum);
-        setActiveScrollDay(dayNum);
-      }
-    }
-  }, [activeActivityIndex, flatActivities, activeDay]);
+  // When an activity comes into view, sync with map
+  const handleActivityInView = (activity: Activity) => {
+    const idx = flatActivities.findIndex(
+      (a) => a.lat === activity.lat && a.lng === activity.lng && a.title === activity.title
+    );
+    if (idx !== -1) setActiveActivityIndex(idx);
+    setActiveActivity(activity);
+  };
 
-  // ── Scroll spy ──
+  // Scroll spy for day navigation
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
     const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      setScrolled(scrollTop > 80);
       let found: number | null = null;
       for (const day of data.days) {
         const el = document.getElementById(`day-${day.day}`);
         if (el) {
           const { top } = el.getBoundingClientRect();
-          if (top <= 250) found = day.day;
+          if (top <= 300) found = day.day;
         }
       }
       if (found !== activeScrollDay) setActiveScrollDay(found);
@@ -382,205 +466,148 @@ export default function ItineraryViewClient({ itinerary, data, heroImage }: Itin
   return (
     <div
       ref={scrollContainerRef}
-      className="fixed inset-0 z-[100] flex flex-col bg-black overflow-y-auto overflow-x-hidden font-sans selection:bg-orange-200/40 scrollbar-hide"
+      className="fixed inset-0 z-[100] flex flex-col bg-[#F6F6F7] overflow-y-auto overflow-x-hidden font-sans selection:bg-orange-100 scrollbar-hide"
     >
-      {/* ══════════════════════════════ STICKY DAY NAVIGATOR */}
+      {/* ─── Sticky Day Nav ─── */}
       <StickyDayNav days={data.days} activeScrollDay={activeScrollDay} />
 
-      {/* ══════════════════════════════ CINEMATIC HERO ══════════════════════════════ */}
-      <section className="relative h-screen w-full min-h-[900px] flex flex-col justify-end overflow-hidden bg-black">
-        {/* === LUXURY BACKGROUND LAYER === */}
-        <motion.div
-          style={{ scale: smoothHeroScale, opacity: heroOpacity }}
-          className="absolute inset-0 z-0"
-        >
-          <motion.img
-            initial={{ scale: 1 }}
-            animate={{ scale: 1.08 }}
-            transition={{ duration: 25, ease: [0.25, 0.1, 0.15, 1] }}
-            src={heroImage}
-            alt={itinerary.destination}
-            className="w-full h-full object-cover will-change-transform"
-          />
-
-          {/* Cinematic vignette + color grade */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_70%)] opacity-60 z-10" />
-
-          {/* Warm light leak from bottom right */}
-          <div className="absolute bottom-0 right-0 w-[40vw] h-[40vh] bg-gradient-to-tl from-amber-500/15 via-orange-500/5 to-transparent rounded-full blur-[100px] z-10 pointer-events-none" />
-
-          {/* Subtle grain texture for analog luxury feel */}
-          <div className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none z-10"
-            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '200px' }} />
-        </motion.div>
-
-        {/* === CONTENT CONTAINER === */}
-        <div className="relative z-20 w-full px-6 md:px-12 lg:px-20 xl:px-28 pb-20 md:pb-48 flex flex-col-reverse md:flex-row items-start md:items-end justify-between gap-10 md:gap-20">
-
-          {/* LEFT: Journey Chip – now a minimalist luxury badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="group relative flex items-center gap-4 px-5 py-3 rounded-full bg-black/30 backdrop-blur-2xl border border-white/15 shadow-2xl hover:border-amber-400/40 transition-all duration-700"
-          >
-            {/* Animated border glow on hover */}
-            <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-r from-amber-400/20 to-orange-500/20 blur-xl" />
-
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-600/10 flex items-center justify-center border border-amber-400/30 shadow-[0_0_25px_rgba(245,158,11,0.2)] group-hover:shadow-[0_0_35px_rgba(245,158,11,0.4)] transition-all duration-500">
-              <span className="text-xl font-sans font-light text-amber-200 tracking-tighter">
-                <AnimatedCounter to={itinerary.days} />
-              </span>
-            </div>
-
-            <div className="flex flex-col">
-              <span className="md:text-[14px] font-semibold uppercase tracking-[0.25em] text-terracotta">Days</span>
-
-            </div>
-          </motion.div>
-
-          {/* RIGHT: Main typography – sensual & powerful */}
-          <div className="flex flex-col items-start md:items-end text-left md:text-right max-w-4xl w-full">
-            <motion.h1
-              initial={{ opacity: 0, y: 35 }}
+      {/* ══════════════ HERO SECTION — SPLIT LAYOUT ══════════════ */}
+      <section className="w-full bg-white border-b border-zinc-100">
+        <div className="flex flex-col lg:flex-row min-h-[100vh]">
+          {/* LEFT: Text Content */}
+          <div className="relative w-full lg:w-[35%] flex flex-col justify-center px-8 md:px-16 lg:px-20 py-16">
+            {/* Branding */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-7xl md:text-9xl lg:text-[9rem] xl:text-[11rem] font-sans font-medium text-white leading-[0.85] tracking-[-0.02em] drop-shadow-2xl mb-6 relative"
+              transition={{ duration: 0.6 }}
+            >
+              <span className="absolute top-[20px] left-[30px] md:text-[30px] font-semibold uppercase tracking-[0.1em] text-navy/90 mb-8 block">Nomad<span className="text-[#C4632C]">Go</span></span>
+            </motion.div>
+
+            {/* Destination */}
+            <motion.h1
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="text-5xl md:text-7xl lg:text-8xl font-serif text-zinc-900 leading-[0.9] tracking-tight mb-4"
             >
               {itinerary.destination.split(",")[0]}
-              {/* Elegant underline that appears on hover */}
-              <span className="absolute -bottom-4 left-0 md:left-auto md:right-0 w-0 h-[2px] bg-gradient-to-r from-amber-400 to-orange-500 group-hover:w-full transition-all duration-1000 ease-out" />
             </motion.h1>
 
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-xl md:text-2xl font-light text-zinc-500 mb-2"
+            >
+              {itinerary.days} Days Itinerary
+            </motion.p>
+
+            {/* Trip Summary Row */}
+            {data.estimatedCostINR && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.6 }}
+                className="mb-8"
+              >
+                <TripSummary
+                  costINR={data.estimatedCostINR}
+                  places={data.placesCount || 0}
+                  distanceKm={data.totalDistanceKm || 0}
+                  difficulty={data.difficulty || "Moderate"}
+                />
+              </motion.div>
+            )}
+
+            {/* Estimated Expense (Keep for compatibility or remove if redundant) */}
+            {!data.estimatedCostINR && data.estimatedTotalExpense && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-full mb-8 w-fit"
+              >
+                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Estimated Expense:</span>
+                <span className="text-sm font-bold text-zinc-900">{data.estimatedTotalExpense}</span>
+              </motion.div>
+            )}
+
+            {/* Download PDF */}
             <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.55, duration: 0.8, ease: [0.65, 0, 0.35, 1] }}
-              className="w-24 h-[1.5px] bg-gradient-to-r from-amber-400 to-transparent mb-5 origin-left md:origin-right md:bg-gradient-to-l"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <ExportPdfButton itineraryId={itinerary.id} />
+            </motion.div>
+          </div>
+
+          {/* RIGHT: Hero Image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full lg:w-[65%] min-h-[400px] lg:min-h-0 relative overflow-hidden"
+          >
+            <img
+              src={heroImage}
+              alt={itinerary.destination}
+              className="w-full h-full object-cover"
             />
 
-
-          </div>
+          </motion.div>
         </div>
-
-        {/* === LUXURY SCROLL INDICATOR – refined, minimal, kinetic === */}
-        <motion.div
-          animate={{ y: [0, 12, 0] }}
-          transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-          onClick={() => scrollContainerRef.current?.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 cursor-pointer group flex flex-col items-center gap-2"
-        >
-          <span className="text-[9px] font-semibold uppercase tracking-[0.4em] text-white/40 group-hover:text-white/80 transition-colors duration-300">Scroll</span>
-          <div className="relative w-px h-14 overflow-hidden">
-            <div className="absolute w-full h-full bg-gradient-to-b from-amber-400/0 via-amber-400/70 to-amber-400/0 animate-[scrollPulse_2.2s_ease-in-out_infinite]" />
-            <div className="w-full h-full bg-white/20" />
-          </div>
-          <div className="w-1 h-1 rounded-full bg-amber-400/60 group-hover:bg-amber-400 transition-colors duration-300" />
-        </motion.div>
-
-
       </section>
 
-
-
-      {/* ══════════════════════════════ CONTENT AREA */}
+      {/* ══════════════ CONTENT + MAP SPLIT ══════════════ */}
       <div className="flex-1 w-full relative">
         <div className="flex flex-col lg:flex-row w-full">
-          {/* LEFT: Scrollable Content */}
-          <div className="w-full lg:w-[60%] xl:w-[65%] px-6 md:px-12 lg:pl-[max(4rem,calc(50vw-650px))] lg:pr-20 pt-0 pb-32">
-            <div className="mb-20 space-y-6">
-              <div className="text-[20px] md:text-[40px] font-bold tracking-[0.2em] text-terracotta"
-                style={{ fontFamily: 'var(--font-dancing), cursive' }}>
-                Explore unmissable
-              </div>
-              <div className="max-w-xl">
-                <p className="text-zinc-500 font-light text-lg leading-relaxed">
-                  Discover exclusive activities and hidden gems curated specifically for your <span className="text-white font-medium italic">{itinerary.vibe.toLowerCase()}</span> vibe.
-                  Every stop is a story waiting to be told.
-                </p>
-              </div>
-            </div>
 
-            <KnowBeforeYouGo data={data} />
+          {/* LEFT: Scrollable Content */}
+          <div className="w-full lg:w-[60%] xl:w-[65%] px-6 md:px-12 lg:pl-20 lg:pr-16 py-16">
+
+            <EssentialIntel data={data} />
             <WhereToStay stays={data.suggestedStays} destination={itinerary.destination} />
 
-            <div className="space-y-0">
-              {flatActivities.map((activity, index) => {
-                const isFirstActivityOfDay = flatActivities.findIndex(a => a.dayNumber === activity.dayNumber) === index;
-                const isLast = index === flatActivities.length - 1;
-                const dayData = data.days.find(d => d.day === activity.dayNumber);
+            {/* ── Day Sections ── */}
+            {data.days.map((day) => (
+              <DaySection key={day.day} day={day} onActivityInView={handleActivityInView} />
+            ))}
 
-                const aligns: ("left" | "right" | "wide")[] = ["left", "right", "wide", "left", "right"];
-                const align = aligns[index % aligns.length];
-
-                return (
-                  <div key={`${activity.dayNumber}-${index}`} data-activity-lat={activity.lat} data-activity-lng={activity.lng} id={`day-${activity.dayNumber}`}>
-
-                    {isFirstActivityOfDay && dayData && (
-                      <DayOpener
-                        dayInfo={{ dayTitle: dayData.title, dayNumber: dayData.day, summary: dayData.summary }}
-                        image={activity.image}
-                      />
-                    )}
-
-                    <EditorialActivityScene
-                      activity={activity}
-                      index={index}
-                      onInView={setActiveActivityIndex}
-                      align={align}
-                      isLast={isLast}
-                    />
-
-                    {isLast && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="mt-32 pt-32 pb-16 flex flex-col items-center text-center relative"
-                      >
-                        <div className="w-px h-24 bg-gradient-to-b from-white/10 to-transparent absolute top-0 left-1/2 -translate-x-1/2" />
-
-                        <span className="text-[12px] font-black uppercase tracking-[0.4em] text-orange-400 mb-6">
-                          Epilogue
-                        </span>
-
-                        <h3 className="text-5xl md:text-7xl font-sans text-white leading-[1.1] tracking-tight mb-6">
-                          Your story is<br />ready to begin.
-                        </h3>
-
-                        <p className="text-zinc-400 text-lg font-light leading-relaxed max-w-md mx-auto mb-10">
-                          Download this curated experience for offline access. Every moment has been carefully crafted.
-                        </p>
-
-                        <div className="flex items-center justify-center">
-                          <div className="scale-100 transform origin-center shadow-[0_0_40px_rgba(245,158,11,0.1)] hover:shadow-[0_0_60px_rgba(245,158,11,0.2)] transition-shadow duration-700 rounded-full">
-                            <ExportPdfButton itineraryId={itinerary.id} />
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {/* ── Epilogue ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="mt-16 pt-16 pb-16 flex flex-col items-center text-center border-t border-zinc-200"
+            >
+              <span className="text-[11px] md:text-[18px] font-semibold uppercase tracking-[0.4em] text-[#C4632C] mb-4">
+                Your Journey Awaits
+              </span>
+              <h3 className="text-4xl md:text-5xl font-serif text-zinc-900 leading-tight mb-4">
+                Your story is<br />ready to begin.
+              </h3>
+              <p className="text-zinc-500 text-base leading-relaxed max-w-md mx-auto mb-8">
+                Download this curated experience for offline access. Every moment has been carefully crafted.
+              </p>
+              <ExportPdfButton itineraryId={itinerary.id} />
+            </motion.div>
           </div>
 
-          <div className="hidden lg:block lg:w-[40%] xl:w-[35%] border-l border-white/5">
+          {/* RIGHT: Sticky Map */}
+          <div className="hidden lg:block lg:w-[40%] xl:w-[35%] border-l border-zinc-200">
             <div className="sticky top-0 h-screen">
-              <div className="w-full h-full bg-zinc-950 overflow-hidden relative">
+              <div className="w-full h-full bg-[#F6F6F7] overflow-hidden relative">
                 <MapWrapper days={data.days} activeActivityIndex={activeActivityIndex} flatActivities={flatActivities} />
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 }
