@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { PlaneTakeoff, Building, Upload, Check } from "lucide-react";
+import { PlaneTakeoff, Building, Upload, Check, Clock, Star, Utensils, Car, Lightbulb, MapPin, ArrowRight } from "lucide-react";
 
 export default function MapPlanningSection() {
   return (
@@ -43,44 +43,25 @@ export default function MapPlanningSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.7 }}
-          className="w-full rounded-[24px] shadow-[0_30px_80px_-20px_rgba(15,25,35,0.15)] overflow-hidden bg-white border border-navy/5"
+          className="w-full rounded-[24px] overflow-hidden border border-navy/5"
         >
           <div className="flex flex-col md:flex-row h-[800px] md:h-[650px]">
             {/* Left Side: Map */}
-            <div className="relative w-full md:w-[55%] h-1/2 md:h-full bg-[#E5E7EB] border-b md:border-b-0 md:border-r border-navy/10 overflow-hidden">
+            <div className="relative w-full md:w-[55%] h-1/2 md:h-full  border-b md:border-b-0 md:border-r border-navy/10 overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2500&auto=format&fit=crop"
+                src="/map-landing.png"
                 alt="Map View"
                 fill
-                className="object-cover opacity-80"
+                className="object-cover"
               />
-              {/* Map UI Overlay */}
-              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay" />
-
-              {/* Map Pins */}
-              <div className="absolute top-1/2 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="w-8 h-8 rounded-full bg-[#10B981] border-2 border-white shadow-lg flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-white" />
-                </div>
-              </div>
-              <div className="absolute top-[40%] left-[60%] transform -translate-x-1/2 -translate-y-1/2">
-                <div className="w-8 h-8 rounded-full bg-[#EF4444] border-2 border-white shadow-lg flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-white" />
-                </div>
-              </div>
-              <div className="absolute top-[60%] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
-                <div className="px-3 py-1.5 rounded-full bg-white border border-navy/10 shadow-lg font-bold text-xs text-navy">
-                  $150
-                </div>
-              </div>
             </div>
 
             {/* Right Side: Details Panel */}
-            <div className="w-full md:w-[45%] h-1/2 md:h-full flex flex-col bg-white">
+            <div className="w-full md:w-[45%] h-1/2 md:h-full flex flex-col">
               {/* Top Image */}
               <div className="relative h-[240px] w-full shrink-0">
                 <Image
-                  src="https://images.unsplash.com/photo-1542259009477-d625272157b7?q=80&w=2069&auto=format&fit=crop"
+                  src="https://images.pexels.com/photos/30912162/pexels-photo-30912162.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
                   alt="Hawaii Landscape"
                   fill
                   className="object-cover"
@@ -98,85 +79,168 @@ export default function MapPlanningSection() {
                   Share
                 </button>
 
-                {/* Journeys */}
-                <div className="mb-8">
-                  <h4 className="text-[13px] font-bold uppercase tracking-wider text-navy/50 mb-4">Journeys</h4>
+                {/* Itinerary Sections */}
+                <div className="space-y-10">
+                  {/* MORNING */}
+                  <div>
+                    <h4 className="text-[13px] font-bold uppercase tracking-wider text-terracotta mb-6">Morning</h4>
 
-                  {/* Flight 1 */}
-                  <div className="flex items-center justify-between py-3 border-b border-navy/5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                        <PlaneTakeoff className="w-4 h-4 text-blue-600" />
+                    <div className="space-y-10 relative">
+                      {/* Vertical Line */}
+                      <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-navy/5" />
+
+                      {/* Item 1 */}
+                      <div className="relative pl-8">
+                        <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full bg-terracotta border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.1)]" />
+                        <div className="mb-2">
+                          <h5 className="text-[16px] font-bold text-navy inline">Breakfast at Barnum Roma</h5>
+                          <span className="text-navy/30 mx-2">—</span>
+                          <span className="text-[13px] text-navy/40">Via del Pellegrino, 87, 00186 Roma RM, Italy</span>
+                        </div>
+                        <p className="text-[14px] text-navy/70 leading-relaxed mb-4">
+                          A cozy, chic café known for artisan coffee, homemade pastries, and a modern twist on Roman breakfast staples.
+                        </p>
+
+                        {/* Insight Box */}
+                        <div className="bg-[#FAF3F0] rounded-2xl p-4 mb-4 flex gap-3 border border-terracotta/5">
+                          <Lightbulb className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
+                          <p className="text-[13px] text-terracotta/80 leading-snug">
+                            This spot perfectly blends Rome's traditional 'caffè' culture with a modern artisan vibe, matching your cultural interest.
+                          </p>
+                        </div>
+
+                        {/* Meta Tags */}
+                        <div className="flex flex-wrap items-center gap-4 text-[12px] text-navy/40 font-medium">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>1 hour</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-terracotta fill-terracotta" />
+                            <span className="text-navy/60 font-bold">4.6</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Utensils className="w-3.5 h-3.5" />
+                            <span>Italian Bakery</span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-[15px] font-bold text-navy">4:45 PM</div>
-                        <div className="text-[13px] text-navy/70 font-medium">SFO</div>
-                        <div className="text-[11px] text-navy/40 mt-1">Thursday, Apr 16</div>
+
+                      {/* Item 2 */}
+                      <div className="relative pl-8">
+                        <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full bg-navy/10 border-2 border-white" />
+                        <div className="mb-2">
+                          <h5 className="text-[16px] font-bold text-navy inline">The Colosseum & Roman Forum</h5>
+                          <span className="text-navy/30 mx-2">—</span>
+                          <span className="text-[13px] text-navy/40">Piazza del Colosseo, 1, 00184 Roma RM, Italy</span>
+                        </div>
+                        <p className="text-[14px] text-navy/70 leading-relaxed mb-4">
+                          The world's most famous amphitheater and the center of ancient Roman public life.
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-4 text-[12px] text-navy/40 font-medium">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>3 hours</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-terracotta fill-terracotta" />
+                            <span className="text-navy/60 font-bold">4.8</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-navy/5 border border-navy/5 text-navy/60">
+                            <Car className="w-3 h-3" />
+                            <span>taxi • 12 mins</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="text-center px-4">
-                      <div className="text-[11px] text-navy/50">5h 35m</div>
-                      <div className="text-[10px] text-navy/40">Nonstop</div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-[15px] font-bold text-navy">7:20 PM</div>
-                      <div className="text-[13px] text-navy/70 font-medium">HNL</div>
-                      <div className="text-[11px] text-navy/40 mt-1">United</div>
-                    </div>
-
-                    <div className="text-[15px] font-bold text-navy ml-4">$395</div>
                   </div>
 
-                  {/* Flight 2 */}
-                  <div className="flex items-center justify-between py-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                        <PlaneTakeoff className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-[15px] font-bold text-navy">7:00 AM</div>
-                        <div className="text-[13px] text-navy/70 font-medium">HNL</div>
-                        <div className="text-[11px] text-navy/40 mt-1">Sunday, Apr 19</div>
-                      </div>
-                    </div>
+                  {/* AFTERNOON */}
+                  <div>
+                    <h4 className="text-[13px] font-bold uppercase tracking-wider text-terracotta mb-6">Afternoon</h4>
 
-                    <div className="text-center px-4">
-                      <div className="text-[11px] text-navy/50">5h 10m</div>
-                      <div className="text-[10px] text-navy/40">Nonstop</div>
-                    </div>
+                    <div className="space-y-10 relative">
+                      {/* Vertical Line */}
+                      <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-navy/5" />
 
-                    <div className="text-right">
-                      <div className="text-[15px] font-bold text-navy">3:10 PM</div>
-                      <div className="text-[13px] text-navy/70 font-medium">SFO</div>
-                      <div className="text-[11px] text-navy/40 mt-1">United</div>
-                    </div>
+                      {/* Item 1: Lunch */}
+                      <div className="relative pl-8">
+                        <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full bg-navy/10 border-2 border-white" />
+                        <div className="mb-2">
+                          <h5 className="text-[16px] font-bold text-navy inline">Lunch at Taverna dei Fori Imperiali</h5>
+                          <span className="text-navy/30 mx-2">—</span>
+                          <span className="text-[13px] text-navy/40">Via della Madonna dei Monti, 9, 00184 Roma RM, Italy</span>
+                        </div>
+                        <p className="text-[14px] text-navy/70 leading-relaxed mb-4">
+                          A family-run gem serving authentic Roman pasta dishes just steps away from the ancient ruins.
+                        </p>
 
-                    <button className="ml-4 px-3 py-1.5 bg-[#0F1923] text-white rounded text-xs font-bold flex items-center gap-1">
-                      Book <span className="text-[10px]">▼</span>
-                    </button>
-                  </div>
-                </div>
+                        {/* Insight Box */}
+                        <div className="bg-[#FAF3F0] rounded-2xl p-4 mb-4 flex gap-3 border border-terracotta/5">
+                          <Lightbulb className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
+                          <p className="text-[13px] text-terracotta/80 leading-snug">
+                            The Carbonara here is widely considered among the best in the city, using top-tier guanciale.
+                          </p>
+                        </div>
 
-                {/* Stays */}
-                <div>
-                  <h4 className="text-[13px] font-bold uppercase tracking-wider text-navy/50 mb-4">Stays</h4>
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-navy/10 hover:border-navy/20 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-sand overflow-hidden relative shrink-0">
-                        <Image src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop" alt="Hotel" fill className="object-cover" />
+                        {/* Meta Tags */}
+                        <div className="flex flex-wrap items-center gap-4 text-[12px] text-navy/40 font-medium">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>1.5 hours</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-terracotta fill-terracotta" />
+                            <span className="text-navy/60 font-bold">4.5</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-navy/5 border border-navy/5 text-navy/60">
+                            <motion.div animate={{ x: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                              <ArrowRight className="w-3 h-3" />
+                            </motion.div>
+                            <span>walk • 7 mins</span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-[14px] font-bold text-navy">Luana Waikiki Hotel & Suites</div>
-                        <div className="text-[12px] text-navy/50">Apr 16 - Apr 19</div>
+
+                      {/* Item 2: Monti */}
+                      <div className="relative pl-8">
+                        <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full bg-navy/10 border-2 border-white" />
+                        <div className="mb-2">
+                          <h5 className="text-[16px] font-bold text-navy inline">Explore the Monti District</h5>
+                          <span className="text-navy/30 mx-2">—</span>
+                          <span className="text-[13px] text-navy/40">Via Urbana, 00184 Roma RM, Italy</span>
+                        </div>
+                        <p className="text-[14px] text-navy/70 leading-relaxed mb-4">
+                          Rome's most charming neighborhood, filled with artisan boutiques, vintage shops, and ivy-draped alleyways.
+                        </p>
+
+                        {/* Insight Box */}
+                        <div className="bg-[#FAF3F0] rounded-2xl p-4 mb-4 flex gap-3 border border-terracotta/5">
+                          <Lightbulb className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
+                          <p className="text-[13px] text-terracotta/80 leading-snug">
+                            This area captures the 'Rione' spirit where traditional life meets contemporary creativity.
+                          </p>
+                        </div>
+
+                        {/* Meta Tags */}
+                        <div className="flex flex-wrap items-center gap-4 text-[12px] text-navy/40 font-medium">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>2 hours</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-terracotta fill-terracotta" />
+                            <span className="text-navy/60 font-bold">4.7</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-navy/5 border border-navy/5 text-navy/60">
+                            <motion.div animate={{ x: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                              <ArrowRight className="w-3 h-3" />
+                            </motion.div>
+                            <span>walk • 5 mins</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="text-[14px] font-bold text-navy">$160</div>
-                      <button className="px-3 py-1.5 bg-[#0F1923] text-white rounded text-xs font-bold flex items-center gap-1">
-                        Book <span className="text-[10px]">▼</span>
-                      </button>
                     </div>
                   </div>
                 </div>

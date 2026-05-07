@@ -36,8 +36,20 @@ export default function Header() {
   const navLinks = [
     { label: "Explore", href: "#explore" },
     { label: "Pricing", href: "#pricing" },
-    { label: "How it Works", href: "#how-it-works" },
+    { label: "Guides", href: "#guides" },
   ];
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#") && isLandingPage) {
+      e.preventDefault();
+      const targetId = href.replace("#", "");
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+      setIsOpen(false);
+    }
+  };
 
   return (
     <motion.header
@@ -47,7 +59,7 @@ export default function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-14 py-4 md:py-6 transition-all duration-500",
         (scrolled || isOpen)
-          ? isLandingPage 
+          ? isLandingPage
             ? "bg-white/10 backdrop-blur-xl border-b border-navy/10 py-3 md:py-4 shadow-xl"
             : "bg-black/10 backdrop-blur-xl border-b border-sand/10 py-3 md:py-4 shadow-xl"
           : "bg-transparent"
@@ -90,6 +102,7 @@ export default function Header() {
           <Link
             key={link.label}
             href={link.href}
+            onClick={(e) => handleNavClick(e, link.href)}
             className={cn(
               "group relative text-sm font-medium tracking-wide transition-colors duration-300",
               (scrolled && isLandingPage) ? "text-navy/80 hover:text-navy" : "text-sand/80 hover:text-sand"
@@ -121,7 +134,7 @@ export default function Header() {
           href="/login"
           className={cn(
             "hidden sm:block px-5 py-2.5 rounded-full border text-[13px] font-medium backdrop-blur-md transition-all",
-            (scrolled && isLandingPage) 
+            (scrolled && isLandingPage)
               ? "border-navy/20 text-navy/85 hover:bg-navy/5 hover:border-navy/35"
               : "border-sand/20 text-sand/85 hover:bg-sand/10 hover:border-sand/35"
           )}
@@ -161,7 +174,7 @@ export default function Header() {
                 >
                   <Link
                     href={link.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => handleNavClick(e, link.href)}
                     className="text-2xl text-sand/90 font-bold tracking-wide hover:text-[#C5632D] transition-colors"
                   >
                     {link.label}

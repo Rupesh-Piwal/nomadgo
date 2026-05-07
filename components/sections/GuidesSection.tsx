@@ -8,7 +8,7 @@ const guides = [
   {
     name: "Maldives",
     slug: "maldives",
-    image: "https://images.pexels.com/photos/29289155/pexels-photo-29289155.jpeg",
+    image: "https://images.pexels.com/photos/29289155/pexels-photo-29289155.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   {
     name: "Switzerland",
@@ -18,38 +18,38 @@ const guides = [
   {
     name: "Singapore",
     slug: "singapore",
-    image: "https://images.pexels.com/photos/20768105/pexels-photo-20768105.jpeg",
+    image: "https://images.pexels.com/photos/20768105/pexels-photo-20768105.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   {
     name: "Scotland",
     slug: "scotland",
-    image: "https://images.unsplash.com/photo-1641038321852-bc96d970e2e5?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "https://images.unsplash.com/photo-1641038321852-bc96d970e2e5?q=80&w=800&auto=format&fit=crop",
   },
   {
     name: "Rome",
     slug: "rome",
-    image: "https://images.pexels.com/photos/1797161/pexels-photo-1797161.jpeg",
+    image: "https://images.pexels.com/photos/1797161/pexels-photo-1797161.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   {
     name: "Japan",
     slug: "japan",
-    image: "https://images.pexels.com/photos/35066466/pexels-photo-35066466.jpeg",
+    image: "https://images.pexels.com/photos/35066466/pexels-photo-35066466.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   {
     name: "Great Wall of China",
     slug: "great-wall-of-china",
-    image: "https://images.pexels.com/photos/17615499/pexels-photo-17615499.jpeg",
+    image: "https://images.pexels.com/photos/17615499/pexels-photo-17615499.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   {
     name: "Cambodia",
     slug: "cambodia",
-    image: "https://images.pexels.com/photos/5278961/pexels-photo-5278961.jpeg",
+    image: "https://images.pexels.com/photos/5278961/pexels-photo-5278961.jpeg?auto=compress&cs=tinysrgb&w=800",
   }
 ];
 
 export default function GuidesSection() {
   return (
-    <section className="bg-[#FEFEFF] py-[30px] md:py-[60px] px-6 md:px-[8vw] border-t border-navy/5">
+    <section id="guides" className="bg-[#FEFEFF] py-[30px] md:py-[60px] px-6 md:px-[8vw] border-t border-navy/5">
       <div className="max-w-[1240px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

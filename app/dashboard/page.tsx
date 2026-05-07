@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export default async function DashboardPage() {
@@ -146,9 +147,10 @@ export default async function DashboardPage() {
                     key={item.id}
                     className="group relative rounded-[20px] aspect-video overflow-hidden border border-zinc-200/60 shadow-sm transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-[#C4632C]/30 bg-zinc-100"
                   >
-                    <img 
+                    <Image 
                       src={item.photoUrl} 
                       alt={item.destination} 
+                      fill
                       className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105" 
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
