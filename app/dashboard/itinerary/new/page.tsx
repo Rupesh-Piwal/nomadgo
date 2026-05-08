@@ -178,44 +178,54 @@ export default function NewItineraryPage() {
               </div>
 
               {/* Row 2: Duration */}
-              <div className="space-y-2.5">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 pl-1">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 pl-1">
                   Duration
                 </Label>
-                <div className="flex items-center justify-between h-12 bg-zinc-50/50 border border-zinc-200/80 rounded-[14px] px-1.5 w-full shadow-sm">
+                <div className="group relative flex items-center justify-between h-14 bg-zinc-50/50 border border-zinc-200/80 rounded-[18px] p-1.5 w-full shadow-sm hover:border-[#C4632C]/30 transition-all duration-300">
                   <button
                     type="button"
                     disabled={duration <= 1 || isPending}
                     onClick={() => setValue("duration", Math.max(1, duration - 1))}
-                    className="w-9 h-9 flex items-center justify-center rounded-[10px] bg-white border border-zinc-200/80 shadow-sm hover:border-zinc-300 disabled:opacity-40 transition-all text-zinc-600 active:scale-95"
+                    className="w-11 h-11 flex items-center justify-center rounded-[14px] bg-white border border-zinc-200/80 shadow-sm hover:border-[#C4632C] hover:text-[#C4632C] disabled:opacity-30 transition-all active:scale-90"
                   >
-                    <Minus weight="bold" className="w-3.5 h-3.5" />
+                    <Minus weight="bold" className="w-4 h-4" />
                   </button>
-                  <span className="text-sm font-bold text-zinc-900 tabular-nums tracking-tight">
-                    {duration} {duration === 1 ? 'Day' : 'Days'}
-                  </span>
+                  
+                  <div className="flex flex-col items-center">
+                    <span className="text-sm font-bold text-zinc-900 tabular-nums">
+                      {duration} {duration === 1 ? 'Day' : 'Days'}
+                    </span>
+                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">Selected Journey</span>
+                  </div>
+
                   <button
                     type="button"
                     disabled={duration >= 3 || isPending}
                     onClick={() => setValue("duration", Math.min(3, duration + 1))}
-                    className="w-9 h-9 flex items-center justify-center rounded-[10px] bg-white border border-zinc-200/80 shadow-sm hover:border-zinc-300 disabled:opacity-40 transition-all text-zinc-600 active:scale-95"
+                    className="w-11 h-11 flex items-center justify-center rounded-[14px] bg-white border border-zinc-200/80 shadow-sm hover:border-[#C4632C] hover:text-[#C4632C] disabled:opacity-30 transition-all active:scale-90"
                   >
-                    <Plus weight="bold" className="w-3.5 h-3.5" />
+                    <Plus weight="bold" className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
               {/* Row 2: Budget */}
-              <div className="space-y-2.5 flex flex-col justify-center">
+              <div className="space-y-3 flex flex-col justify-center">
                 <div className="flex items-center justify-between pl-1">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">
                     Budget
                   </Label>
-                  <span className="text-[11px] font-bold text-[#C4632C] bg-[#C4632C]/10 px-2 py-0.5 rounded-md">
+                  <motion.span 
+                    key={selectedBudget}
+                    initial={{ opacity: 0, x: 5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[10px] font-black text-[#C4632C] bg-[#C4632C]/10 px-2.5 py-1 rounded-full uppercase tracking-wider"
+                  >
                     {selectedBudget}
-                  </span>
+                  </motion.span>
                 </div>
-                <div className="h-12 flex items-center px-2">
+                <div className="h-14 flex items-center px-4 bg-zinc-50/50 border border-zinc-200/80 rounded-[18px] shadow-sm">
                   <Slider
                     min={0}
                     max={2}

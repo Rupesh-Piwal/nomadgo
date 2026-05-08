@@ -192,23 +192,72 @@ export default function GenerationLoading({ itineraryId }: { itineraryId: string
 
             {/* ── CONTENT ── */}
             <div className="flex flex-col items-center text-center space-y-10 w-full max-w-md">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-serif text-zinc-900 tracking-tight">
-                  Crafting your journey
-                </h2>
-
                 <AnimatePresence mode="wait">
-                  <motion.p
-                    key={currentStep}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="text-zinc-400 text-[10px] font-semibold uppercase tracking-[0.4em]"
-                  >
-                    {LOADING_STEPS[currentStep].text}
-                  </motion.p>
+                  <div className="flex flex-col items-center w-full">
+                    <h2 className="text-3xl font-serif text-zinc-900 tracking-tight mb-8">
+                      Crafting your journey
+                    </h2>
+
+                    {/* Expert Visual Stepper */}
+                    <div className="relative w-full max-w-sm mb-12">
+                      {/* Progress Line Background */}
+                      <div className="absolute top-[18px] left-0 w-full h-[2px] bg-zinc-200" />
+                      
+                      {/* Active Progress Line */}
+                      <motion.div 
+                        className="absolute top-[18px] left-0 h-[2px] bg-[#B54A2A]"
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${(currentStep / (LOADING_STEPS.length - 1)) * 100}%` }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                      />
+
+                      <div className="relative flex justify-between w-full">
+                        {LOADING_STEPS.map((step, idx) => {
+                          const isActive = idx === currentStep;
+                          const isCompleted = idx < currentStep;
+                          const StepIcon = step.icon;
+
+                          return (
+                            <div key={idx} className="flex flex-col items-center">
+                              <motion.div
+                                animate={{ 
+                                  scale: isActive ? 1.2 : 1,
+                                  backgroundColor: (isActive || isCompleted) ? "#B54A2A" : "#FFFFFF",
+                                  borderColor: (isActive || isCompleted) ? "#B54A2A" : "#E4E4E7"
+                                }}
+                                className={cn(
+                                  "w-9 h-9 rounded-full border-2 flex items-center justify-center z-10 transition-colors duration-500 shadow-sm",
+                                  (isActive || isCompleted) ? "text-white" : "text-zinc-300"
+                                )}
+                              >
+                                <StepIcon weight={(isActive || isCompleted) ? "fill" : "regular"} className="w-4 h-4" />
+                                
+                                {isActive && (
+                                  <motion.div
+                                    layoutId="step-pulse"
+                                    animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="absolute inset-0 rounded-full bg-[#B54A2A]/30 -z-10"
+                                  />
+                                )}
+                              </motion.div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <motion.p
+                      key={currentStep}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-[#B54A2A] text-[10px] font-bold uppercase tracking-[0.4em] bg-[#B54A2A]/5 px-6 py-2 rounded-full border border-[#B54A2A]/10 shadow-sm"
+                    >
+                      {LOADING_STEPS[currentStep].text}
+                    </motion.p>
+                  </div>
                 </AnimatePresence>
-              </div>
             </div>
           </div>
         </motion.div>

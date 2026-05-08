@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Languages, Sun, ArrowRight, Download } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import MapWrapper from "@/app/components/itinerary/map-wrapper";
 import ExportPdfButton from "@/app/components/itinerary/export-pdf-button";
@@ -90,42 +91,94 @@ function StickyDayNav({ days, activeScrollDay }: { days: Day[]; activeScrollDay:
     <AnimatePresence>
       {activeScrollDay !== null && (
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed top-1/2 left-6 -translate-y-1/2 z-[150] hidden lg:flex flex-col items-center py-8"
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed top-1/2 left-2 -translate-y-1/2 z-[150] hidden lg:flex flex-col items-center gap-1"
         >
-          <div className="absolute top-0 bottom-0 w-px bg-zinc-200 left-1/2 -translate-x-1/2" />
+          {/* Glassmorphic Container */}
+          <div className="relative flex flex-col items-center py-2 px-1 bg-white/40 backdrop-blur-2xl rounded-full border border-white/40 shadow-[0_16px_48px_rgba(0,0,0,0.05)]">
 
-          {days.map((day) => {
-            const isActive = activeScrollDay === day.day;
-            return (
-              <button
-                key={day.day}
-                onClick={() => document.getElementById(`day-${day.day}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="relative py-5 flex items-center justify-center group outline-none"
-                aria-label={`Scroll to Day ${day.day}`}
-              >
-                {isActive ? (
-                  <motion.div
-                    layoutId="active-dot"
-                    className="relative z-10 w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg"
-                  >
-                    <span className="text-[12px] font-black text-white">{day.day}</span>
-                  </motion.div>
-                ) : (
-                  <div className="relative z-10 w-2.5 h-2.5 rounded-full bg-zinc-300 group-hover:bg-zinc-900 transition-all duration-300 group-hover:scale-125" />
-                )}
+            {/* Background Track */}
+            <div className="absolute top-8 bottom-8 w-[2px] bg-[#111111]/5 left-1/2 -translate-x-1/2" />
 
-                <div className="absolute left-12 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap">
-                  <span className="bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-xl block">
-                    Day {day.day}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+            {/* Progress Line */}
+            <motion.div
+              className="absolute top-8 w-[2px] bg-[#B54A2A] left-1/2 -translate-x-1/2"
+              initial={{ height: 0 }}
+              animate={{
+                height: `${((activeScrollDay - 1) / (days.length - 1)) * 100}%`
+              }}
+              transition={{ type: "spring", damping: 30, stiffness: 200 }}
+              style={{ maxHeight: "calc(100% - 4rem)" }}
+            />
+
+            {days.map((day, idx) => {
+              const isActive = activeScrollDay === day.day;
+              const isPast = activeScrollDay > day.day;
+
+              return (
+                <button
+                  key={day.day}
+                  onClick={() => {
+                    const el = document.getElementById(`day-${day.day}`);
+                    if (el) {
+                      const offset = 80;
+                      const bodyRect = document.body.getBoundingClientRect().top;
+                      const elementRect = el.getBoundingClientRect().top;
+                      const elementPosition = elementRect - bodyRect;
+                      const offsetPosition = elementPosition - offset;
+                      window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth"
+                      });
+                    }
+                  }}
+                  className="relative py-3 flex items-center justify-center group outline-none"
+                  aria-label={`Scroll to Day ${day.day}`}
+                >
+                  {/* Dot */}
+                  <div className="relative z-10">
+                    {isActive ? (
+                      <motion.div
+                        layoutId="active-dot-outer"
+                        className="w-10 h-10 rounded-full border border-[#B54A2A]/20 bg-[#B54A2A]/5 flex items-center justify-center"
+                      >
+                        <motion.div
+                          layoutId="active-dot-inner"
+                          className="w-7 h-7 rounded-full bg-[#B54A2A] flex items-center justify-center shadow-[0_4px_12px_rgba(181,74,42,0.4)]"
+                        >
+                          <span className="text-[11px] font-bold text-white">{day.day}</span>
+                        </motion.div>
+
+                        {/* Pulse Effect */}
+                        <motion.div
+                          animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="absolute inset-0 rounded-full bg-[#B54A2A]/20"
+                        />
+                      </motion.div>
+                    ) : (
+                      <div className={cn(
+                        "w-3 h-3 rounded-full transition-all duration-500",
+                        isPast ? "bg-[#B54A2A]" : "bg-zinc-200 group-hover:bg-zinc-400 group-hover:scale-125"
+                      )} />
+                    )}
+                  </div>
+
+                  {/* Tooltip Label */}
+                  <div className="absolute left-16 opacity-0 translate-x-[-10px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-400 pointer-events-none">
+                    <div className="bg-[#111111] text-white px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 whitespace-nowrap">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Day {day.day}</span>
+                      <div className="w-[1px] h-3 bg-white/10" />
+                      <span className="text-[12px] font-semibold text-white truncate max-w-[150px]">{day.title}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -277,8 +330,10 @@ function DaySection({ day, onActivityInView }: { day: Day; onActivityInView: (ac
       {/* Time-of-Day Sections */}
       {groups.map(([timeOfDay, activities]) => (
         <div key={timeOfDay} className="mb-8">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#C4632C] mb-4">
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6 flex items-center gap-3">
+            <span className="w-8 h-[1px] bg-zinc-200" />
             {timeOfDay}
+            <span className="flex-1 h-[1px] bg-zinc-200" />
           </h3>
           <ul className="space-y-4 pl-1">
             {activities.map((activity, idx) => (
@@ -335,8 +390,8 @@ function ActivityBullet({ activity, onInView }: { activity: Activity; onInView: 
   }, [activity, onInView]);
 
   return (
-    <li ref={ref} className="relative pl-5 border-l-2 border-zinc-100 hover:border-orange-300 transition-colors group/item">
-      <div className="absolute left-[-5px] top-2 w-2 h-2 rounded-full bg-zinc-200 group-hover/item:bg-orange-400 transition-colors" />
+    <li ref={ref} className="relative pl-6 border-l border-zinc-100 hover:border-[#B54A2A]/30 transition-colors group/item pb-8 last:pb-0">
+      <div className="absolute left-[-4.5px] top-2 w-2 h-2 rounded-full border-2 border-white bg-zinc-200 group-hover/item:bg-[#B54A2A] group-hover/item:scale-125 transition-all duration-300" />
 
       <p className="text-[13px] md:text-[14px] text-zinc-700 leading-relaxed">
         <span className="font-bold text-zinc-900">{activity.title}</span>
@@ -347,17 +402,20 @@ function ActivityBullet({ activity, onInView }: { activity: Activity; onInView: 
       <p className="text-[12px] md:text-[13px] text-zinc-500 leading-relaxed mt-1">{activity.description}</p>
 
       {activity.aiInsight && (
-        <p className="text-[10px] md:text-[12px] text-[#C4632C] font-sans mt-2 bg-[#C4632C]/10 rounded-[16px] px-3 py-1.5 inline-block">
-          💡 {activity.aiInsight}
-        </p>
+        <div className="flex items-center gap-2 mt-3 bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 w-fit">
+          <span className="text-[10px]">💡</span>
+          <p className="text-[11px] md:text-[12px] text-zinc-600 font-medium">
+            {activity.aiInsight}
+          </p>
+        </div>
       )}
 
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-zinc-400">
-        {activity.duration && <span>⏱ {activity.duration}</span>}
+      <div className="flex flex-wrap items-center gap-3 mt-4 text-[11px] text-zinc-400">
+        {activity.duration && <span className="flex items-center gap-1.5 bg-zinc-100 px-2 py-1 rounded-md">⏱ {activity.duration}</span>}
         {activity.rating && (
-          <span className="flex items-center gap-0.5">
-            <Star className="w-3 h-3 text-[#C4632C] fill-orange-700/30" />
+          <span className="flex items-center gap-1 bg-zinc-100 px-2 py-1 rounded-md text-zinc-600 font-bold">
+            <Star className="w-3 h-3 text-[#B54A2A] fill-[#B54A2A]" />
             {activity.rating.toFixed(1)}
           </span>
         )}
