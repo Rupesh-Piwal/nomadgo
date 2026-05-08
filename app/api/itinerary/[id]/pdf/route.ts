@@ -6,7 +6,7 @@ import puppeteerCore from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 
 // Tell Next.js that this API route is dynamic and may take some time
-export const maxDuration = 120; 
+export const maxDuration = 120;
 export const dynamic = 'force-dynamic';
 
 export async function POST(
@@ -42,7 +42,8 @@ export async function POST(
     const host = req.headers.get("host");
     const protocol = host?.includes("localhost") ? "http" : "https";
     const baseUrl = `${protocol}://${host}`;
-    const targetUrl = `${baseUrl}/dashboard/itinerary/${itineraryId}/print`;
+    // Route lives outside /dashboard to avoid sidebar/navbar chrome in PDF
+    const targetUrl = `${baseUrl}/print/itinerary/${itineraryId}`;
 
     let browser;
     try {
@@ -55,7 +56,7 @@ export async function POST(
       if (process.env.NODE_ENV === "development") {
         // Local environment: use standard puppeteer
         const puppeteer = require("puppeteer");
-        browser = await puppeteer.launch({ 
+        browser = await puppeteer.launch({
           headless: true,
           args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
@@ -101,7 +102,7 @@ export async function POST(
 
       // Navigate and wait for network to be idle
       console.log(`Puppeteer navigating to: ${targetUrl}`);
-      
+
       if (req.signal.aborted) throw new Error("AbortError");
 
       // Increased timeout to 90s and using networkidle2 which is more resilient to lingering analytics/assets
@@ -131,11 +132,11 @@ export async function POST(
 
       // Generate the PDF
       if (req.signal.aborted) throw new Error("AbortError");
-      
+
       const pdfBuffer = await page.pdf({
         format: "A4",
         printBackground: true,
-        margin: { top: "1cm", right: "1cm", bottom: "1cm", left: "1cm" },
+        margin: { top: "0", right: "0", bottom: "0", left: "0" },
         preferCSSPageSize: true
       });
 
@@ -151,7 +152,7 @@ export async function POST(
 
     } catch (error: any) {
       if (browser) await browser.close();
-      
+
       if (error.message === "AbortError" || req.signal.aborted) {
         console.log("PDF Generation stopped: User closed the tab or aborted the request.");
         return new Response("Request Aborted", { status: 499 });

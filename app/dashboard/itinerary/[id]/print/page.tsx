@@ -49,8 +49,9 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
   const data = itinerary.data as unknown as ItineraryData;
 
   return (
-    <div className="bg-[#FBF9F4] min-h-screen text-[#111111] font-sans print:p-0 print:m-0 w-[210mm] mx-auto shadow-2xl print:shadow-none">
-      <style dangerouslySetInnerHTML={{ __html: `
+    <div className="bg-[#FBF9F4] text-[#111111] font-sans print:bg-white w-full max-w-[210mm] mx-auto shadow-2xl print:shadow-none print:w-full">
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @media print {
           @page {
             size: A4;
@@ -60,15 +61,23 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
             -webkit-print-color-adjust: exact;
             background-color: #FBF9F4 !important;
           }
+          .page-break {
+            page-break-after: always;
+            break-after: page;
+          }
           .break-inside-avoid {
             page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          * {
+            overflow: visible !important;
           }
         }
       `}} />
 
       {data.days.map((day, dayIndex) => (
-        <div key={day.day} className="relative min-h-[297mm] flex flex-col break-after-page overflow-hidden">
-          
+        <div key={day.day} className="relative flex flex-col page-break">
+
           {/* Header */}
           <header className="px-12 py-8 flex justify-between items-center border-b border-black/5 bg-[#FBF9F4]">
             <div className="text-[14px] font-serif font-bold tracking-[0.1em] uppercase">
@@ -103,9 +112,9 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
             {day.day % 2 === 0 && day.activities[0]?.image && (
               <div className="mb-20">
                 <div className="relative w-full aspect-[21/9] overflow-hidden mb-6">
-                  <img 
-                    src={day.activities[0].image} 
-                    className="w-full h-full object-cover grayscale-[10%]" 
+                  <img
+                    src={day.activities[0].image}
+                    className="w-full h-full object-cover grayscale-[10%]"
                     alt={day.activities[0].title}
                   />
                   <div className="absolute bottom-0 left-0 bg-white/90 backdrop-blur-sm p-8 max-w-sm">
@@ -150,7 +159,7 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
                       <p className="text-[15px] leading-[1.6] text-[#444444] mb-8 font-sans">
                         {activity.description}
                       </p>
-                      
+
                       {/* Best Time Tag */}
                       <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-[#000000] text-white text-[9px] font-bold uppercase tracking-[0.15em]">
                         <MapPin className="w-3 h-3" />
@@ -159,10 +168,10 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
 
                       {(activity.curatorNote || true) && (
                         <div className="mt-14 pt-8 border-t border-black/10">
-                           <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] mb-4 text-[#111111]">Curator's Note</h4>
-                           <p className="text-[14px] italic text-[#555555] font-serif leading-relaxed">
-                             {activity.curatorNote || "Take a moment to sit on the veranda of the Hondo (main hall) facing the pond. The view is designed to inspire contemplation."}
-                           </p>
+                          <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] mb-4 text-[#111111]">Curator's Note</h4>
+                          <p className="text-[14px] italic text-[#555555] font-serif leading-relaxed">
+                            {activity.curatorNote || "Take a moment to sit on the veranda of the Hondo (main hall) facing the pond. The view is designed to inspire contemplation."}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -171,28 +180,28 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
                     <div className="w-[55%] relative">
                       {activity.image ? (
                         <div className="relative group">
-                          <img 
-                            src={activity.image} 
+                          <img
+                            src={activity.image}
                             alt={activity.title}
                             className="w-full aspect-[4/3] object-cover grayscale-[15%] brightness-[0.98] transition-all duration-700"
                           />
                           {/* Decorative overlap image for some variety */}
                           {actIndex % 2 === 0 && (
                             <div className="absolute -bottom-14 -left-14 w-2/3 border-[10px] border-[#FBF9F4] shadow-2xl hidden md:block">
-                               <img 
-                                 src={activity.image} 
-                                 className="w-full aspect-video object-cover grayscale brightness-[0.9]"
-                                 alt="detail"
-                               />
+                              <img
+                                src={activity.image}
+                                className="w-full aspect-video object-cover grayscale brightness-[0.9]"
+                                alt="detail"
+                              />
                             </div>
                           )}
                           {actIndex % 2 === 1 && (
                             <div className="absolute -top-14 -right-14 w-1/2 border-[10px] border-[#FBF9F4] shadow-2xl hidden md:block">
-                               <img 
-                                 src={activity.image} 
-                                 className="w-full aspect-square object-cover grayscale-[50%] brightness-[0.8]"
-                                 alt="detail"
-                               />
+                              <img
+                                src={activity.image}
+                                className="w-full aspect-square object-cover grayscale-[50%] brightness-[0.8]"
+                                alt="detail"
+                              />
                             </div>
                           )}
                         </div>
