@@ -45,15 +45,15 @@ interface ItineraryData {
 // ─── Design Tokens ──────────────────────────────────────────────
 
 const T = {
-  bg:       "#FAFAF7",
-  cream:    "#F5F3EE",
-  text:     "#1A1A1A",
-  muted:    "#6B6B6B",
-  light:    "#9A9A9A",
-  accent:   "#B54A2A",
-  rule:     "#E0DDD6",
-  dark:     "#0C0C0C",
-  white:    "#FFFFFF",
+  bg: "#FAFAF7",
+  cream: "#F5F3EE",
+  text: "#1A1A1A",
+  muted: "#6B6B6B",
+  light: "#9A9A9A",
+  accent: "#B54A2A",
+  rule: "#E0DDD6",
+  dark: "#0C0C0C",
+  white: "#FFFFFF",
 };
 
 // ─── Reusable Style Objects (Puppeteer-safe inline styles) ──────
@@ -146,7 +146,8 @@ function PageFooter({ destination }: { destination: string }) {
 }
 
 function CoverPage({ destination, days, data }: { destination: string; days: Day[]; data: ItineraryData }) {
-  const heroImage = days[0]?.activities?.find(a => a.image)?.image;
+  const heroActivity = days[0]?.activities?.find(a => a.image);
+  const heroImage = heroActivity ? (typeof heroActivity.image === 'string' ? heroActivity.image : (heroActivity.image as any)?.url) : null;
   const cityName = destination.split(",")[0].trim();
 
   return (
@@ -418,8 +419,8 @@ function DayIntroSection({ day, destination }: { day: Day; destination: string }
 function ActivityBlock({ activity, index }: { activity: Activity; index: number }) {
   const timeLabel = activity.timeOfDay === "Morning" ? "Morning"
     : activity.timeOfDay === "Lunchtime" ? "Midday"
-    : activity.timeOfDay === "Afternoon" ? "Afternoon"
-    : "Evening";
+      : activity.timeOfDay === "Afternoon" ? "Afternoon"
+        : "Evening";
 
   return (
     <div style={{
@@ -432,7 +433,7 @@ function ActivityBlock({ activity, index }: { activity: Activity; index: number 
       <div style={{ width: "200px", flexShrink: 0 }}>
         {activity.image ? (
           <img
-            src={activity.image}
+            src={typeof activity.image === 'string' ? activity.image : (activity.image as any)?.url}
             alt={activity.title}
             style={{
               width: "200px",
@@ -765,7 +766,8 @@ export default async function PrintItineraryPage({ params }: { params: Promise<{
       backgroundColor: T.bg,
     }}>
       {/* Global Print Styles */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap');
 
         * {

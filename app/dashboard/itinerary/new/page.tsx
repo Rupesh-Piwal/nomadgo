@@ -72,6 +72,11 @@ export default function NewItineraryPage() {
 
   const onSubmit = async (data: ItineraryFormValues) => {
     startTransition(async () => {
+      toast.info("Crafting itinerary...", {
+        description: "This will take about 20-30 seconds. Please stay on this page.",
+        duration: 5000,
+      });
+
       const formData = new FormData();
       formData.append("destination", data.destination);
       formData.append("duration", data.duration.toString());
@@ -81,7 +86,6 @@ export default function NewItineraryPage() {
       const result = await generateItinerary(formData);
 
       if (result.success) {
-        toast.success("Itinerary generated successfully!");
         router.push(`/dashboard/itinerary/${result.id}`);
       } else {
         if (result.error === "INSUFFICIENT_CREDITS") {

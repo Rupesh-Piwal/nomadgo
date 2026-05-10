@@ -68,6 +68,11 @@ export default function Hero() {
     }
 
     startTransition(async () => {
+      toast.info("Crafting itinerary...", {
+        description: "This will take about 20-30 seconds. Please stay on this page.",
+        duration: 5000,
+      });
+
       const formData = new FormData();
       formData.append("destination", destination);
       formData.append("duration", duration.toString());
@@ -77,7 +82,6 @@ export default function Hero() {
       const result = await generateItinerary(formData);
 
       if (result.success) {
-        toast.success("Itinerary generated!");
         router.push(`/dashboard/itinerary/${result.id}`);
       } else {
         if (result.error === "INSUFFICIENT_CREDITS") {

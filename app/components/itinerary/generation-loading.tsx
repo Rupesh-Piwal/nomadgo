@@ -15,6 +15,7 @@ import {
 } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // ─── Configuration ──────────────────────────────────────────────
 const LOADING_STEPS = [
@@ -159,6 +160,7 @@ export default function GenerationLoading({ itineraryId }: { itineraryId: string
   // Exit Handler
   useEffect(() => {
     if (phase === "exiting") {
+      toast.success("Itinerary generated successfully!");
       setTimeout(() => router.refresh(), 800);
     }
   }, [phase, router]);
