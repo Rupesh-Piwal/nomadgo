@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { deductCredits } from "@/lib/credits";
 import { prisma } from "@/lib/prisma";
 import puppeteerCore from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 
 // Tell Next.js that this API route is dynamic and may take some time
 export const maxDuration = 120;
@@ -74,8 +74,10 @@ export async function POST(
         browser = await puppeteerCore.launch({
           args: chromium.args,
           defaultViewport: { width: 1280, height: 720 },
-          executablePath: await chromium.executablePath(),
-          headless: true,
+          executablePath: await chromium.executablePath(
+            "https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar"
+          ),
+          headless: "shell" as any,
         });
       }
 

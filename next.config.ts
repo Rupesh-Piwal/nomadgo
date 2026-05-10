@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
   },
-  serverExternalPackages: ["puppeteer", "puppeteer-core", "@sparticuz/chromium"],
+  serverExternalPackages: ["puppeteer", "puppeteer-core", "@sparticuz/chromium-min"],
 };
 
 export default nextConfig;
