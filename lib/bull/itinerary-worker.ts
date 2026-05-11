@@ -7,6 +7,9 @@ import { prisma } from "../prisma";
 import { generateItinerary as runGenerator } from "../itinerary/generateItinerary";
 import { enrichItineraryWithImages } from "../../services/media/enrich-itinerary.service";
 import { ItineraryStatus } from "@prisma/client";
+import http from "http";
+import "./pdf-worker";
+
 
 export const ITINERARY_QUEUE_NAME = "itinerary-generation";
 
@@ -133,5 +136,14 @@ worker.on("failed", (job, err) => {
 });
 
 console.log("🚀 Itinerary Worker is running...");
+
+// Railway Health Check Server
+const PORT = process.env.PORT || 3001;
+http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("Worker is alive");
+}).listen(PORT, () => {
+  console.log(`📡 Health check server running on port ${PORT}`);
+});
 
 export default worker;

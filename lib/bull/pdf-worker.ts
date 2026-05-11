@@ -34,9 +34,7 @@ export const pdfWorker = new Worker(
         browser = await puppeteerCore.launch({
           args: [...chromium.args, "--disable-web-security"],
           defaultViewport: { width: 1200, height: 1600 },
-          executablePath: await chromium.executablePath(
-             "https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar"
-          ),
+          executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || await chromium.executablePath(),
           headless: (chromium as any).headless,
         });
       }

@@ -14,7 +14,7 @@ export const itineraryQueue = global.itineraryQueue || new Queue(ITINERARY_QUEUE
     attempts: 3,
     backoff: {
       type: "exponential",
-      delay: 5000,
+      delay: 60000,
     },
     removeOnComplete: true,
     removeOnFail: false,
