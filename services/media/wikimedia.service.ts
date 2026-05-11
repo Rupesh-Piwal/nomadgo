@@ -41,7 +41,9 @@ export async function fetchWikimediaImage(
     // Filter out common UI icons (flags, logos, maps)
     const validImages = images.filter((page: any) => {
       const title = page.title.toLowerCase();
-      return !title.includes(".svg") && !title.includes("map") && !title.includes("logo") && !title.includes("flag");
+      const isImage = title.endsWith(".jpg") || title.endsWith(".jpeg") || title.endsWith(".png") || title.endsWith(".webp");
+      const isIcon = title.includes("logo") || title.includes("flag") || title.includes("icon") || title.includes("map");
+      return isImage && !isIcon;
     });
 
     if (validImages.length === 0) return null;

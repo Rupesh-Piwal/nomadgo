@@ -58,6 +58,45 @@ export async function deleteImageFromR2(fileName: string): Promise<void> {
     throw new Error("Failed to delete image from R2");
   }
 }
+export async function uploadPdfToR2(
+  buffer: Buffer,
+  fileName: string
+): Promise<string | null> {
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const bucketName = process.env.R2_BUCKET_NAME;
+  const publicUrl = process.env.R2_PUBLIC_URL;
+
+  if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) {
+    console.error("R2 credentials missing for PDF upload");
+    return null;
+  }
+
+  const s3Client = new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: fileName,
+      Body: buffer,
+      ContentType: "application/pdf",
+    });
+
+    await s3Client.send(command);
+    return `${publicUrl}/${fileName}`;
+  } catch (error) {
+    console.error("Error uploading PDF to R2:", error);
+    return null;
+  }
+}
 
 export async function checkFileExists(fileName: string): Promise<string | null> {
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) {

@@ -26,45 +26,59 @@ export default function ExportPdfButton({ itineraryId, destination }: ExportPdfB
 
     try {
       setIsGenerating(true);
-      // Removed the toast.info since we now have a beautiful overlay
       
+      // 1. Trigger the background job
       const response = await fetch(`/api/itinerary/${itineraryId}/pdf`, {
         method: "POST",
       });
 
       if (!response.ok) {
-        if (response.status === 402) {
-          throw new Error("Insufficient credits to generate PDF.");
-        }
-        if (response.status === 401) {
-          throw new Error("Unauthorized. Please log in.");
-        }
-        throw new Error("Failed to generate PDF");
+        if (response.status === 402) throw new Error("Insufficient credits.");
+        throw new Error("Failed to start PDF generation");
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const { exportId } = await response.json();
 
+      // 2. Poll for completion
+      const pollStatus = async (): Promise<string> => {
+        const statusRes = await fetch(`/api/itinerary/pdf/${exportId}/status`);
+        if (!statusRes.ok) throw new Error("Failed to check status");
+        
+        const data = await statusRes.json();
+        
+        if (data.status === "COMPLETED" && data.url) {
+          return data.url;
+        }
+        
+        if (data.status === "FAILED") {
+          throw new Error("PDF generation failed in background");
+        }
+
+        // Wait 3 seconds and poll again
+        await new Promise(r => setTimeout(r, 3000));
+        return pollStatus();
+      };
+
+      const finalUrl = await pollStatus();
+
+      // 3. Download the file
       const a = document.createElement("a");
-      a.href = url;
-      const fileName = destination ? `${destination.split(',')[0]}-Editorial.pdf` : `NomadGo-Itinerary-${itineraryId.slice(0, 8)}.pdf`;
+      a.href = finalUrl;
+      const fileName = destination ? `${destination.split(',')[0]}-Editorial.pdf` : `NomadGo-Editorial-${itineraryId.slice(0, 8)}.pdf`;
       a.download = fileName;
+      a.target = "_blank"; // Open in new tab just in case it's a direct link
       document.body.appendChild(a);
       a.click();
       a.remove();
 
-      window.URL.revokeObjectURL(url);
-
-      toast.success("PDF downloaded successfully!");
+      toast.success("PDF generated successfully!");
       fetchCredits();
 
     } catch (error: any) {
+      console.error("Export error:", error);
       toast.error(error.message || "An error occurred during PDF generation.");
     } finally {
-      // Delay closing the overlay slightly for a smoother transition
-      setTimeout(() => {
-        setIsGenerating(false);
-      }, 800);
+      setIsGenerating(false);
     }
   };
 
